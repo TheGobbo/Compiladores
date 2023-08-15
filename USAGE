@@ -17,3 +17,9 @@ arquivo "compilador.y".
 Na segunda parte da disciplina, será mostrado como gerar um autômato a
 pilha (tabela de ações e de desvios) para uma classe de gramáticas
 mais restritas do que esta, porém que segue o mesmo "esquema".
+
+**Linkando flex e bison**
+
+> sudo apt-get install flex bison libfl-dev libbion-dev
+
+Utilizar a flag `-lfl` no lugar de `-ll`
