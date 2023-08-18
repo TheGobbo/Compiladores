@@ -55,25 +55,25 @@ program { simbolo  = simb_program;
 label   { simbolo = simb_label;
           strncpy (token, yytext, TAM_TOKEN);
           IMPRIME("label ");
-          // return LABEL;
+          return LABEL;
  }
 
 type    { simbolo = simb_type;
           strncpy (token, yytext, TAM_TOKEN);
           IMPRIME("type ");
-          // return TYPE;
+          return TYPE;
  }
 
 array     { simbolo = simb_array;
           strncpy (token, yytext, TAM_TOKEN);
           IMPRIME("array ");
-          // return ARRAY;
+          return ARRAY;
  }
 
 of    { simbolo = simb_of;
           strncpy (token, yytext, TAM_TOKEN);
           IMPRIME("of ");
-          // return OF;
+          return OF;
  }
 
 var      { simbolo = simb_var;
@@ -85,73 +85,73 @@ var      { simbolo = simb_var;
 procedure     { simbolo = simb_procedure;
           strncpy (token, yytext, TAM_TOKEN);
           IMPRIME("procedure ");
-          // return PROCEDURE;
+          return PROCEDURE;
  }
 
 function    { simbolo = simb_function;
           strncpy (token, yytext, TAM_TOKEN);
           IMPRIME("function ");
-          // return FUNCTION;
+          return FUNCTION;
  }
 
 goto    { simbolo = simb_goto;
           strncpy (token, yytext, TAM_TOKEN);
           IMPRIME("goto ");
-          // return GOTO;
+          return GOTO;
  }
 
 if    { simbolo = simb_if;
           strncpy (token, yytext, TAM_TOKEN);
           IMPRIME("if ");
-          // return IF;
+          return IF;
  }
 
 then    { simbolo = simb_then;
           strncpy (token, yytext, TAM_TOKEN);
           IMPRIME("then ");
-          // return THEN;
+          return THEN;
  }
 
 else    { simbolo = simb_else;
           strncpy (token, yytext, TAM_TOKEN);
           IMPRIME("else ");
-          // return ELSE;
+          return ELSE;
  }
 
 while     { simbolo = simb_while;
           strncpy (token, yytext, TAM_TOKEN);
           IMPRIME("while ");
-          // return WHILE;
+          return WHILE;
  }
 
 do    { simbolo = simb_do;
           strncpy (token, yytext, TAM_TOKEN);
           IMPRIME("do ");
-          // return DO;
+          return DO;
  }
 
 or    { simbolo = simb_or;
           strncpy (token, yytext, TAM_TOKEN);
           IMPRIME("or ");
-          // return OR;
+          return OR;
  } 
 
 div     { simbolo = simb_div;
           strncpy (token, yytext, TAM_TOKEN);
           IMPRIME("div ");
-          // return DIV;
+          return DIV;
  }
 
 and     { simbolo = simb_and;
           strncpy (token, yytext, TAM_TOKEN);
           IMPRIME("and ");
-          // return AND;
+          return AND;
  }
 
 not     { simbolo = simb_not;
           strncpy (token, yytext, TAM_TOKEN);
           IMPRIME("not ");
-          // return NOT;
+          return NOT;
  }
 
 begin { simbolo = simb_begin;
@@ -212,7 +212,7 @@ end { simbolo = simb_end;
 {numero}  { simbolo = simb_numero;
             strncpy(token, yytext, TAM_TOKEN);
             IMPRIME(" numero");
-            // return NUMERO;
+            return NUMERO;
  }
 
 {ident} { simbolo = simb_identificador;

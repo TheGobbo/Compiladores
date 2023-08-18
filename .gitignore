@@ -1,6 +1,8 @@
-MEPA
+*.o 
+*.gch
+*.tab.* 
+*.output
 
-compilador.tab.* 
+MEPA
 lex.yy.c 
-compilador.o 
 compilador
