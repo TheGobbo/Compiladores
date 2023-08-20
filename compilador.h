@@ -13,6 +13,8 @@
 
 #define TAM_TOKEN 16
 
+#include "stack.h"
+
 typedef enum simbolos {
     simb_program,
     simb_label,
@@ -41,6 +43,18 @@ typedef enum simbolos {
     simb_ponto,
     simb_abre_parenteses,
     simb_fecha_parenteses,
+
+    simb_mais,
+    simb_menos,
+    // simb_asterisco,
+    // simb_barra,
+
+    simb_diferenca,
+    simb_menor,
+    simb_menor_igual,
+    simb_maior_igual,
+    simb_maior,
+
     simb_numero,
     simb_identificador,
 } simbolos;
@@ -62,3 +76,5 @@ extern int nl;
 void geraCodigo(char *, char *);
 int yylex();
 void yyerror(const char *s);
+
+void type_checker(Stack *s);

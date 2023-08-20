@@ -21,7 +21,7 @@
 #include "compilador.h"
 #include "compilador.tab.h"
 
-//#define IMPRIME(STR) {};
+// #define IMPRIME(STR) {};
 #define IMPRIME(STR) printf("%s    # %s \n", STR, token);
 
 int nl = 1;
@@ -208,6 +208,48 @@ end { simbolo = simb_end;
           IMPRIME(" fecha_parenteses ");
           return FECHA_PARENTESES;
  }
+
+\+  { simbolo = simb_mais;
+          strncpy (token, yytext, TAM_TOKEN);
+          IMPRIME(" mais ");
+          return MAIS; 
+}
+
+\-  { simbolo = simb_menos;
+          strncpy (token, yytext, TAM_TOKEN);
+          IMPRIME(" menos ");
+          return MENOS; 
+}
+
+(<>)  {   simbolo = simb_diferenca;
+          strncpy (token, yytext, TAM_TOKEN);
+          IMPRIME(" diferenca ");
+          return DIFERENCA; 
+}
+
+(<=)  {   simbolo = simb_menor_igual;
+          strncpy (token, yytext, TAM_TOKEN);
+          IMPRIME(" menor_igual ");
+          return MENOR_IGUAL; 
+}
+
+(>=)  {   simbolo = simb_maior_igual;
+          strncpy (token, yytext, TAM_TOKEN);
+          IMPRIME(" maior_igual ");
+          return MAIOR_IGUAL; 
+}
+
+\<  {   simbolo = simb_menor;
+          strncpy (token, yytext, TAM_TOKEN);
+          IMPRIME(" menor ");
+          return MENOR; 
+}
+
+\>  {   simbolo = simb_maior;
+          strncpy (token, yytext, TAM_TOKEN);
+          IMPRIME(" maior ");
+          return MAIOR; 
+}
 
 {numero}  { simbolo = simb_numero;
             strncpy(token, yytext, TAM_TOKEN);
