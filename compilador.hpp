@@ -13,7 +13,7 @@
 
 #define TAM_TOKEN 16
 
-#include "stack.h"
+#include "TabelaSimbolos.hpp"
 
 typedef enum simbolos {
     simb_program,
@@ -63,6 +63,7 @@ typedef enum simbolos {
  * variáveis globais
  * ------------------------------------------------------------------- */
 
+extern TabelaSimbolos TS;
 extern simbolos simbolo, relacao;
 extern char token[TAM_TOKEN];
 extern int nivel_lexico;
@@ -73,8 +74,8 @@ extern int nl;
  * prototipos globais
  * ------------------------------------------------------------------- */
 
-void geraCodigo(char *, char *);
+void geraCodigo(const char* rot, const char* comando);
 int yylex();
-void yyerror(const char *s);
+// void yyerror(const char* s);
 
-void type_checker(Stack *s);
+void type_checker();

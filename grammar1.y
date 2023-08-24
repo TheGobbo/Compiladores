@@ -1,20 +1,30 @@
-
-// Testar se funciona corretamente o empilhamento de parametros
-// passados por valor ou por referencia.
-
+/* https://learnmoderncpp.com/2020/12/17/generating-c-programs-with-flex-and-bison-2/ */
 
 %{
-#include <stdio.h>
-#include <ctype.h>
-#include <stdlib.h>
-#include <string.h>
-#include "compilador.h"
-#include "stack.h"
-
-int num_vars;
-Stack* variaveis;
-
+#include <iostream>
+#include <string>
+#include <cmath>
+#include "Scanner1.hpp"
+#include "compilador.hpp"
 %}
+ 
+%require "3.7.4"
+%language "C++"
+%defines "Parser1.hpp"
+%output "Parser1.cpp"
+ 
+%define api.parser.class {Parser}
+%define api.namespace {calc}
+%define api.value.type variant
+%param {yyscan_t scanner}
+ 
+%code provides
+{
+    #define YY_DECL \
+        int yylex(calc::Parser::semantic_type *yylval, yyscan_t yyscanner)
+    YY_DECL;
+}
+
 
 %token PROGRAM ABRE_PARENTESES FECHA_PARENTESES
 %token VIRGULA PONTO_E_VIRGULA DOIS_PONTOS PONTO
@@ -220,29 +230,7 @@ comandos:
 // ;
 
 %%
-
-int main (int argc, char** argv) {
-   FILE* fp;
-   extern FILE* yyin;
-
-   if (argc<2 || argc>2) {
-         printf("usage compilador <arq>a %d\n", argc);
-         return(-1);
-      }
-
-   fp=fopen (argv[1], "r");
-   if (fp == NULL) {
-      printf("usage compilador <arq>b\n");
-      return(-1);
-   }
-
-
-/* -------------------------------------------------------------------
- *  Inicia a Tabela de Simbolos
- * ------------------------------------------------------------------- */
-
-   yyin=fp;
-   yyparse();
-
-   return 0;
+ 
+void calc::Parser::error(const std::string& msg) {
+    std::cerr << msg << " at line " << nl <<'\n';
 }
