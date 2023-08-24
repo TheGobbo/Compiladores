@@ -1,65 +1,46 @@
 #include "stack.h"
 
+#include <stdio.h>
 #include <stdlib.h>
 
-Stack* new_Stack() {
-    printf("NEW STACK CREATED!\n");
-    Stack* s = malloc(sizeof(Stack));
-    s->top = -1;
-    return s;
+Stack* createStack(void** data) {
+    Stack* stack = (Stack*)malloc(sizeof(Stack));
+    stack->data = data;
+    stack->top = -1;
+    return stack;
 }
 
-void delete_Stack(Stack* s) {
-    if (s != NULL) {
-        free(s);
-        printf("STACK DELETED!\n");
+int isEmpty(Stack* stack) { return stack->top == -1; }
+
+int isFull(Stack* stack) { return stack->top == MAX_STACK_SIZE - 1; }
+
+void push(Stack* stack, void* item) {
+    if (isFull(stack)) {
+        printf("Stack is full. Cannot push.\n");
+        return;
+    }
+    stack->data[++stack->top] = item;
+}
+
+void* pop(Stack* stack) {
+    if (isEmpty(stack)) {
+        printf("Stack is empty. Cannot pop.\n");
+        return NULL;
+    }
+    return stack->data[stack->top--];
+}
+
+void* peek(Stack* stack) {
+    if (isEmpty(stack)) {
+        printf("Stack is empty. Cannot peek.\n");
+        return NULL;
+    }
+    return stack->data[stack->top];
+}
+
+void destroyStack(Stack* stack) {
+    if (stack != NULL) {
+        free(stack);
     }
     return;
-}
-
-/* Check if the stack is empty */
-int stack_isempty(Stack* s) {
-    if (s->top == -1)
-        return 1;
-    else
-        return 0;
-}
-
-/* Check if the stack is full */
-int stack_isfull(Stack* s) {
-    if (s->top == MAXSTACK_SIZE)
-        return 1;
-    else
-        return 0;
-}
-
-/* Function to return the topmost element in the stack */
-int stack_peek(Stack* s) {
-    if (!stack_isempty(s)) {
-        return s->stack[s->top];
-    } else {
-        printf("Could not retrieve data, Stack is empty.\n");
-    }
-}
-
-/* Function to delete from the stack */
-int stack_pop(Stack* s) {
-    int data;
-    if (!stack_isempty(s)) {
-        data = s->stack[s->top];
-        s->top = s->top - 1;
-        return data;
-    } else {
-        printf("Could not retrieve data, Stack is empty.\n");
-    }
-}
-
-/* Function to insert into the stack */
-int stack_push(Stack* s, int data) {
-    if (!stack_isfull(s)) {
-        s->top = s->top + 1;
-        s->stack[s->top] = data;
-    } else {
-        printf("Could not insert data, Stack is full.\n");
-    }
 }

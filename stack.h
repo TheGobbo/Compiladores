@@ -1,22 +1,20 @@
-
-#if !defined(STACK_H)
+#ifndef STACK_H
 #define STACK_H
 
 #include <stdio.h>
+#define MAX_STACK_SIZE 100  // You can adjust this as needed
 
-#define MAXSTACK_SIZE 8
-
-typedef struct {
-    int stack[MAXSTACK_SIZE];
+typedef struct Stack {
+    void** data;
     int top;
 } Stack;
 
-Stack* new_Stack();
-void delete_Stack(Stack* s);
+Stack* createStack(void** data);
+int isEmpty(Stack* stack);
+int isFull(Stack* stack);
+void push(Stack* stack, void* item);
+void* pop(Stack* stack);
+void* peek(Stack* stack);
+void destroyStack(Stack* stack);
 
-int stack_isempty(Stack* s);
-int stack_isfull(Stack* s);
-int stack_pop(Stack* s);
-int stack_push(Stack* s, int data);
-
-#endif  // STACK_H
+#endif
