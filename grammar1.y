@@ -35,6 +35,8 @@
 %token MAIS MENOS ASTERISCO DIV MULT
 %token DIFERENCA MENOR MENOR_IGUAL MAIOR_IGUAL MAIOR 
 
+%left MAIS MENOS
+%left MULT DIV MODULO
 %%
 
 /* 1. */
@@ -45,6 +47,7 @@ programa    :{
              ABRE_PARENTESES lista_idents FECHA_PARENTESES PONTO_E_VIRGULA
              bloco PONTO {
              geraCodigo (NULL, "PARA");
+             TS.show();
              }
 ;
 
@@ -53,7 +56,7 @@ bloco       : parte_declara_vars
               {
               }
 
-              comando_composto
+              comando_composto 
 /*
             | parte_declara_rotulos
             | parte_declara_subrot 
@@ -69,7 +72,8 @@ bloco       : parte_declara_vars
 
 
 /* 8. */
-parte_declara_vars:  var
+parte_declara_vars  : parte_declara_vars var
+                    | var
 ;
 
 /* 9. */
@@ -87,6 +91,8 @@ declara_var : { }
               lista_id_var DOIS_PONTOS
               tipo
               { /* AMEM */
+                geraCodigo(std::to_string(num_amem).c_str(), "AMEM");
+                num_amem = 0;
               }
               PONTO_E_VIRGULA
 ;
@@ -96,9 +102,18 @@ tipo        : IDENT
 ;
 
 /* 9. (?) */
-lista_id_var: lista_id_var VIRGULA IDENT
-              { /* insere ultima vars na tabela de simbolos */ }
-            | IDENT { /* insere vars na tabela de simbolos */}
+lista_id_var    : lista_id_var VIRGULA IDENT { 
+                    /* insere ultima vars na tabela de simbolos */ 
+                    Simbolo* var{new Simbolo{meu_token, VARIAVEL_SIMPLES, nivel_lexico, TS.getNovoDeslocamento(nivel_lexico)}};
+                    TS.InsereSimbolo(var);
+                    num_amem++;
+                }
+                | IDENT { 
+                    /* insere vars na tabela de simbolos */
+                    Simbolo* var{new Simbolo{meu_token, VARIAVEL_SIMPLES, nivel_lexico, TS.getNovoDeslocamento(nivel_lexico)}};
+                    TS.InsereSimbolo(var);
+                    num_amem++;
+                }
 ;
 
 /* 10. */
@@ -133,33 +148,35 @@ lista_idents: lista_idents VIRGULA IDENT
 // ;
 // 
 /* 16. */
-comando_composto: T_BEGIN comandos T_END
+comando_composto: { print = true; } T_BEGIN comandos T_END 
  
 /* 17. */
-comandos: 
-         /* comandos PONTO_E_VIRGULA comando */
-         /* | comando */
+comandos: comandos PONTO_E_VIRGULA comando
+        | comando
 ;
 
 /* 17. */
-// comando  : 
-//          /* NUMERO PONTO_E_VIRGULA comando_sem_rotulo */
-//          /* | comando_sem_rotulo */
-// ;
-// 
+comando : NUMERO PONTO_E_VIRGULA comando_sem_rotulo
+        | comando_sem_rotulo
+        |
+;
+
 // /* 18. */
-// comando_sem_rotulo   : atribuicao
+comando_sem_rotulo   : atribuicao
 //                      | chamada_procedimento
 //                      | desvio 
 //                      | comando_composto
 //                      | comando_condicional
 //                      | comando_repetitivo
-// ;
+;
 // 
 // /* 19. */
-// atribuicao  : VAR ATRIBUICAO expr
-// ;
-// 
+atribuicao  : variavel ATRIBUICAO expr
+;
+
+/*ERRO se != VS, PF ou Func */
+variavel    : IDENT 
+
 // /* 20. */
 // chamada_procedimento : IDENT lista_expr
 //                      | IDENT
@@ -184,46 +201,44 @@ comandos:
 // ;
 // 
 // /* 25. */
-// expr        : expr_simples relacao expr_simples 
-//             | expr_simples
-// ;
-// 
-// /* 26. */
-// relacao  : ATRIBUICAO 
-//          | DIFERENCA
-//          | MENOR_IGUAL
-//          | MAIOR_IGUAL
-//          | MENOR
-//          | MAIOR
-// ;
-// 
-// /* 27. */
-// expr_simples: opt_sinal termo
-//             | expr_simples MAIS termo
-//             | expr_simples MENOR termo  
-//             | expr_simples OR termo 
-// ;
-// 
-// /* 27. */
-// opt_sinal   : MAIS 
-//             | MENOS 
-//             | /* vazio */
-// ;
-// 
-// /* 28. */
-// termo : termo MULT fator 
-//       | termo DIV fator 
-//       | termo AND fator
-//       | fator
-// ;
-// 
-// /* 29. */
-// fator : NOT fator
-//       | NUMERO
-//       | chamada_funcao
-//       | expr
-// ;
-// 
+expr        : expr relacao expr_simples
+            | expr_simples 
+;
+
+/* 26. */
+relacao  : DIFERENCA
+         | MENOR_IGUAL
+         | MAIOR_IGUAL
+         | MENOR {std::cerr << "MENOR\n";} 
+         | MAIOR {std::cerr << "MAIOR\n";}
+;
+
+/* 27. */
+expr_simples: opt_sinal conteudo
+;
+/* 27. */
+opt_sinal   : MAIS | MENOS | /* vazio */;
+conteudo    : conteudo oper | termo ;
+oper        : MAIS termo
+            | MENOS termo  
+            | OR termo 
+;
+
+/* 28. */
+termo : termo MULT fator 
+      | termo DIV fator 
+      | termo AND fator
+      | fator
+;
+
+/* 29. */
+fator   : variavel
+        |NOT fator
+        | NUMERO
+        /* | chamada_funcao */
+        | expr
+;
+
 // /* 31. */
 // chamada_funcao : chamada_funcao lista_expr 
 //                | IDENT
@@ -232,5 +247,5 @@ comandos:
 %%
  
 void calc::Parser::error(const std::string& msg) {
-    std::cerr << msg << " at line " << nl <<'\n';
+    std::cerr << msg << " at line " << num_line <<'\n';
 }

@@ -9,6 +9,15 @@ TabelaSimbolos::TabelaSimbolos() {}
 
 TabelaSimbolos::~TabelaSimbolos() {}
 
+int8_t TabelaSimbolos::getNovoDeslocamento(int8_t nivel_lexico) {
+    if (this->tabelaDeSimbolos.empty()) {
+        return 0;
+    }
+
+    Simbolo* topo = (Simbolo*)this->tabelaDeSimbolos.back();
+    return topo->getNivelLexico() == nivel_lexico ? topo->getDeslocamento() + 1 : 0;
+}
+
 void TabelaSimbolos::InsereSimbolo(Simbolo* simbolo) {
     if (simbolo == nullptr || !simbolo->valido()) {
         std::cerr << "'Insere simbolo' abortado, 'simbolo' invalido\n";

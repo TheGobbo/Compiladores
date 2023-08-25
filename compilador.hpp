@@ -32,6 +32,7 @@ typedef enum simbolos {
     simb_do,
     simb_or,
     simb_div,
+    simb_mult,
     simb_and,
     simb_not,
     simb_begin,
@@ -65,10 +66,14 @@ typedef enum simbolos {
 
 extern TabelaSimbolos TS;
 extern simbolos simbolo, relacao;
-extern char token[TAM_TOKEN];
-extern int nivel_lexico;
-extern int desloc;
-extern int nl;
+extern char meu_token[TAM_TOKEN];
+extern int8_t nivel_lexico;
+extern int8_t desloc;
+extern int num_line;
+extern int8_t num_amem;
+// extern char* yytext;
+
+extern bool print; /*helper*/
 
 /* -------------------------------------------------------------------
  * prototipos globais

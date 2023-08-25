@@ -27,6 +27,7 @@ class TabelaSimbolos {
     void RemoveSimbolos(int8_t num_simb);
     Simbolo* BuscaSimbolo(char (&identificador)[TAM_TOKEN]);
 
+    int8_t getNovoDeslocamento(int8_t nivel_lexico);
     void show();
 
    private:

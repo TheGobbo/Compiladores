@@ -13,13 +13,12 @@ typedef enum { INTEGER, UNDEFINED } VariableType;
 
 class Simbolo {
    public:
-    Simbolo(char (&identificador)[TAM_TOKEN], Category categoria, int8_t nivel_lexico,
-            int8_t deslocamento);
+    Simbolo(char* identificador, Category categoria, int8_t nivel_lexico, int8_t deslocamento);
 
     void setTipo(VariableType tipo);
 
     // somente getters, proibe alteracao
-    char (&getIdent())[TAM_TOKEN];
+    char* getIdent();
     VariableType getTipo();
     Category getCategoria();
     int8_t getNivelLexico();
@@ -31,11 +30,11 @@ class Simbolo {
     void show();
 
    private:
-    char (&identificador)[TAM_TOKEN];  // constant from start
-    VariableType tipo{UNDEFINED};      // constant later
-    Category categoria;                // constant from start
-    int8_t nivel_lexico{0};            // constant from start
-    int8_t deslocamento{0};            // constant from start
+    char identificador[TAM_TOKEN];  // constant from start
+    VariableType tipo{UNDEFINED};   // constant later
+    Category categoria;             // constant from start
+    int8_t nivel_lexico{0};         // constant from start
+    int8_t deslocamento{0};         // constant from start
     // todo: atributos variaveis [params, ...]
 };
 

@@ -25,7 +25,7 @@
 
 TabelaSimbolos TS;
 simbolos simbolo, relacao;
-char token[TAM_TOKEN];
+char meu_token[TAM_TOKEN];
 
 static std::ofstream fp;  // Use an ofstream instead of FILE* for C++ file handling
 void geraCodigo(const char* rot, const char* comando) {
@@ -43,7 +43,7 @@ void geraCodigo(const char* rot, const char* comando) {
 }
 
 int imprimeErro(const char* erro) {
-    std::cerr << "Erro na linha " << nl << " - " << erro << '\n';
+    std::cerr << "Erro na linha " << num_line << " - " << erro << '\n';
     std::exit(-1);  // Use std::exit to terminate the program
 }
 
@@ -58,7 +58,7 @@ void type_checker() {
     //     char erro[40];
     //     sprintf(erro, "Types must be equal! %c <> %c", l, r);
     //     imprimeErro(erro);
-    //     // printf("Error in line : %d\n", nl);
+    //     // printf("Error in line : %d\n", num_line);
     //     // yyerror("Types must be equal!\n");
     // }  // else l == r :
 

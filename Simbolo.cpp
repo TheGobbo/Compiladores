@@ -5,18 +5,16 @@
 #include <stack>
 
 // construtor
-Simbolo::Simbolo(char (&identificador)[TAM_TOKEN], Category categoria, int8_t nivel_lexico,
-                 int8_t deslocamento)
-    : identificador{identificador},
-      categoria{categoria},
-      nivel_lexico{nivel_lexico},
-      deslocamento{deslocamento} {}
+Simbolo::Simbolo(char* identificador, Category categoria, int8_t nivel_lexico, int8_t deslocamento)
+    : categoria{categoria}, nivel_lexico{nivel_lexico}, deslocamento{deslocamento} {
+    strncpy(this->identificador, identificador, TAM_TOKEN);
+}
 
 // setters
 void Simbolo::setTipo(VariableType tipo) { this->tipo = tipo; }
 
 // getters
-char (&Simbolo::getIdent())[TAM_TOKEN] { return this->identificador; }
+char* Simbolo::getIdent() { return this->identificador; }
 VariableType Simbolo::getTipo() { return this->tipo; }
 Category Simbolo::getCategoria() { return this->categoria; }
 int8_t Simbolo::getNivelLexico() { return this->nivel_lexico; }
