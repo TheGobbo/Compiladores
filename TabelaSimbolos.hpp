@@ -24,14 +24,16 @@ class TabelaSimbolos {
     ~TabelaSimbolos();
 
     void InsereSimbolo(Simbolo* simbolo);
-    void RemoveSimbolos(int8_t num_simb);
-    Simbolo* BuscaSimbolo(char (&identificador)[TAM_TOKEN]);
+    void RemoveSimbolos(int quantidade_simbolos);
+    Simbolo* BuscarSimbolo(char (&identificador)[TAM_TOKEN]);
 
-    int8_t getNovoDeslocamento(int8_t nivel_lexico);
+    int getNovoDeslocamento(int nivel_lexico);
+    void setTipos(VariableType tipo);
+
     void show();
 
    private:
-    int8_t num_simb{0};
+    int quantidade_simbolos{0};
     std::deque<Simbolo*> tabelaDeSimbolos;
 };
 

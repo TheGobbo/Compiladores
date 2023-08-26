@@ -9,7 +9,7 @@ TabelaSimbolos::TabelaSimbolos() {}
 
 TabelaSimbolos::~TabelaSimbolos() {}
 
-int8_t TabelaSimbolos::getNovoDeslocamento(int8_t nivel_lexico) {
+int TabelaSimbolos::getNovoDeslocamento(int nivel_lexico) {
     if (this->tabelaDeSimbolos.empty()) {
         return 0;
     }
@@ -18,13 +18,28 @@ int8_t TabelaSimbolos::getNovoDeslocamento(int8_t nivel_lexico) {
     return topo->getNivelLexico() == nivel_lexico ? topo->getDeslocamento() + 1 : 0;
 }
 
+void TabelaSimbolos::setTipos(VariableType tipo) {
+    if (this->tabelaDeSimbolos.empty()) {
+        return;
+    }
+    Simbolo* simb = nullptr;
+
+    for (auto it = this->tabelaDeSimbolos.rbegin(); it != this->tabelaDeSimbolos.rend(); ++it) {
+        simb = (Simbolo*)*it;
+        if (simb->getTipo() != UNDEFINED) {
+            return;
+        }
+        simb->setTipo(tipo);
+    }
+}
+
 void TabelaSimbolos::InsereSimbolo(Simbolo* simbolo) {
     if (simbolo == nullptr || !simbolo->valido()) {
         std::cerr << "'Insere simbolo' abortado, 'simbolo' invalido\n";
         return;
     }
 
-    if (this->num_simb >= MAX_STACK_SIZE) {
+    if (this->quantidade_simbolos >= MAX_STACK_SIZE) {
         std::cerr << "'Insere simbolo' abortado, 'TabelaSimbolos' cheia\n";
         return;
     }
@@ -32,20 +47,20 @@ void TabelaSimbolos::InsereSimbolo(Simbolo* simbolo) {
     std::cout << "Inserindo : ";
     simbolo->show();
     this->tabelaDeSimbolos.push_back(simbolo);
-    this->num_simb++;
+    this->quantidade_simbolos++;
 }
 
-void TabelaSimbolos::RemoveSimbolos(int8_t num_simb) {
-    while (num_simb > 0 && !this->tabelaDeSimbolos.empty()) {
+void TabelaSimbolos::RemoveSimbolos(int quantidade_simbolos) {
+    while (quantidade_simbolos > 0 && !this->tabelaDeSimbolos.empty()) {
         std::cout << "Removendo : ";
         ((Simbolo*)this->tabelaDeSimbolos.back())->show();
         this->tabelaDeSimbolos.pop_back();
-        this->num_simb--;
-        num_simb--;
+        this->quantidade_simbolos--;
+        quantidade_simbolos--;
     }
     return;
 }
-Simbolo* TabelaSimbolos::BuscaSimbolo(char (&identificador)[TAM_TOKEN]) {
+Simbolo* TabelaSimbolos::BuscarSimbolo(char (&identificador)[TAM_TOKEN]) {
     Simbolo* simb = nullptr;
     for (auto it = this->tabelaDeSimbolos.rbegin(); it != this->tabelaDeSimbolos.rend(); ++it) {
         simb = (Simbolo*)*it;
@@ -88,7 +103,7 @@ int main() {
     tabela.show();
 
     // Search for a Simbolo by identificador
-    Simbolo* foundSymbol = tabela.BuscaSimbolo(rid1);
+    Simbolo* foundSymbol = tabela.BuscarSimbolo(rid1);
     if (foundSymbol) {
         std::cout << "Found Simbolo: ";
         foundSymbol->show();
@@ -103,7 +118,7 @@ int main() {
     tabela.show();
 
     // Search for a Simbolo that has been removed
-    foundSymbol = tabela.BuscaSimbolo(rid1);
+    foundSymbol = tabela.BuscarSimbolo(rid1);
     if (foundSymbol) {
         std::cout << "Found Simbolo: ";
         foundSymbol->show();

@@ -1,11 +1,11 @@
 program varsGlobais (input, output);
-var a1, x, y :  integer;
-var a2, b2, c2 : integer;
-    b3 : integer;
+var a1, a2, a3 : integer;
+var b1, b2, b3 : boolean;
+    x, y : boolean;
 begin    
-    a1 := +a2 + b2 * c2 div b3;
-    a1 := -a2 and b2 or c2 - b3;
-    x := x >= y and x > y * x < y div x <= y;
-    a1 := x < y or x + y and x > y or x >= y and x <= y and y <> y;
+    a1 := +a2 + b2 * b2 div a3;
+    a1 := b3 * b1 + 100;
+    x := x >= y and x;
+    (* a1 := x < y or x + y and x > y or x >= y and x <= y and y <> y; *)
 end.
 

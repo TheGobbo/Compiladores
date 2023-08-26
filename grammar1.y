@@ -4,24 +4,24 @@
 #include <iostream>
 #include <string>
 #include <cmath>
-#include "Scanner1.hpp"
+#include "Scanner.hpp"
 #include "compilador.hpp"
 %}
  
 %require "3.7.4"
 %language "C++"
-%defines "Parser1.hpp"
-%output "Parser1.cpp"
+%defines "Parser.hpp"
+%output "Parser.cpp"
  
 %define api.parser.class {Parser}
-%define api.namespace {calc}
+%define api.namespace {bison}
 %define api.value.type variant
 %param {yyscan_t scanner}
  
 %code provides
 {
     #define YY_DECL \
-        int yylex(calc::Parser::semantic_type *yylval, yyscan_t yyscanner)
+        int yylex(bison::Parser::semantic_type *yylval, yyscan_t yyscanner)
     YY_DECL;
 }
 
@@ -34,6 +34,7 @@
 %token GOTO IF THEN ELSE WHILE DO OR AND NOT NUMERO
 %token MAIS MENOS ASTERISCO DIV MULT
 %token DIFERENCA MENOR MENOR_IGUAL MAIOR_IGUAL MAIOR 
+%token INTEGER BOOLEAN
 
 %left MAIS MENOS
 %left MULT DIV MODULO
@@ -52,11 +53,12 @@ programa    :{
 ;
 
 /* 2. */
-bloco       : parte_declara_vars
-              {
-              }
-
-              comando_composto 
+bloco       : parte_declara_vars { /* AMEM */
+                geraCodigo(std::to_string(num_amem).c_str(), "AMEM");
+                num_amem = 0;
+            }
+            
+            comando_composto 
 /*
             | parte_declara_rotulos
             | parte_declara_subrot 
@@ -89,16 +91,12 @@ declara_vars: declara_vars declara_var
 /* 9. */
 declara_var : { }
               lista_id_var DOIS_PONTOS
-              tipo
-              { /* AMEM */
-                geraCodigo(std::to_string(num_amem).c_str(), "AMEM");
-                num_amem = 0;
-              }
+              tipo { salvarTipos(simbolo); }
               PONTO_E_VIRGULA
 ;
 
 /* 6. (?) */
-tipo        : IDENT
+tipo        : INTEGER | BOOLEAN
 ;
 
 /* 9. (?) */
@@ -107,12 +105,14 @@ lista_id_var    : lista_id_var VIRGULA IDENT {
                     Simbolo* var{new Simbolo{meu_token, VARIAVEL_SIMPLES, nivel_lexico, TS.getNovoDeslocamento(nivel_lexico)}};
                     TS.InsereSimbolo(var);
                     num_amem++;
+                    num_vars++;
                 }
                 | IDENT { 
                     /* insere vars na tabela de simbolos */
                     Simbolo* var{new Simbolo{meu_token, VARIAVEL_SIMPLES, nivel_lexico, TS.getNovoDeslocamento(nivel_lexico)}};
                     TS.InsereSimbolo(var);
                     num_amem++;
+                    num_vars++;
                 }
 ;
 
@@ -171,11 +171,8 @@ comando_sem_rotulo   : atribuicao
 ;
 // 
 // /* 19. */
-atribuicao  : variavel ATRIBUICAO expr
+atribuicao  : variavel ATRIBUICAO expr {operaTiposValidos();}
 ;
-
-/*ERRO se != VS, PF ou Func */
-variavel    : IDENT 
 
 // /* 20. */
 // chamada_procedimento : IDENT lista_expr
@@ -201,7 +198,8 @@ variavel    : IDENT
 // ;
 // 
 // /* 25. */
-expr        : expr relacao expr_simples
+expr        : expr_simples relacao expr_simples { operaTiposValidos(BOOLEANO); }
+            /* expr relacao expr_simples */
             | expr_simples 
 ;
 
@@ -209,36 +207,44 @@ expr        : expr relacao expr_simples
 relacao  : DIFERENCA
          | MENOR_IGUAL
          | MAIOR_IGUAL
-         | MENOR {std::cerr << "MENOR\n";} 
-         | MAIOR {std::cerr << "MAIOR\n";}
+         | MENOR
+         | MAIOR
 ;
 
 /* 27. */
-expr_simples: opt_sinal conteudo
+expr_simples: opt_sinal conteudo 
 ;
 /* 27. */
 opt_sinal   : MAIS | MENOS | /* vazio */;
 conteudo    : conteudo oper | termo ;
-oper        : MAIS termo
-            | MENOS termo  
-            | OR termo 
+oper        : MAIS termo  { operaTiposValidos(INTEIRO); }  
+            | MENOS termo { operaTiposValidos(INTEIRO); }  
+            | OR termo    { operaTiposValidos(BOOLEANO); }
 ;
 
 /* 28. */
-termo : termo MULT fator 
-      | termo DIV fator 
-      | termo AND fator
+termo : termo MULT fator { operaTiposValidos(INTEIRO); }
+      | termo DIV fator  { operaTiposValidos(INTEIRO); }
+      | termo AND fator  { operaTiposValidos(BOOLEANO); }
       | fator
 ;
 
 /* 29. */
 fator   : variavel
-        |NOT fator
-        | NUMERO
+        | NOT fator
+        | NUMERO {stack_tipos.push_back(INTEIRO);}
         /* | chamada_funcao */
         | expr
 ;
 
+/* 30. */   /* ERRO se != VS, PF ou Func */
+variavel    : IDENT {
+                Simbolo* simbolo = TS.BuscarSimbolo(meu_token);
+                if(simbolo == nullptr) error("variable not found");
+                stack_tipos.push_back(simbolo->getTipo());
+            }
+            /* | IDENT lista_expr */
+;
 // /* 31. */
 // chamada_funcao : chamada_funcao lista_expr 
 //                | IDENT
@@ -246,6 +252,7 @@ fator   : variavel
 
 %%
  
-void calc::Parser::error(const std::string& msg) {
+void bison::Parser::error(const std::string& msg) {
     std::cerr << msg << " at line " << num_line <<'\n';
+    exit(0);
 }

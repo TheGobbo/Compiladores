@@ -5,7 +5,7 @@
 #include <stack>
 
 // construtor
-Simbolo::Simbolo(char* identificador, Category categoria, int8_t nivel_lexico, int8_t deslocamento)
+Simbolo::Simbolo(char* identificador, Category categoria, int nivel_lexico, int deslocamento)
     : categoria{categoria}, nivel_lexico{nivel_lexico}, deslocamento{deslocamento} {
     strncpy(this->identificador, identificador, TAM_TOKEN);
 }
@@ -17,8 +17,8 @@ void Simbolo::setTipo(VariableType tipo) { this->tipo = tipo; }
 char* Simbolo::getIdent() { return this->identificador; }
 VariableType Simbolo::getTipo() { return this->tipo; }
 Category Simbolo::getCategoria() { return this->categoria; }
-int8_t Simbolo::getNivelLexico() { return this->nivel_lexico; }
-int8_t Simbolo::getDeslocamento() { return this->deslocamento; }
+int Simbolo::getNivelLexico() { return this->nivel_lexico; }
+int Simbolo::getDeslocamento() { return this->deslocamento; }
 
 // Simbolo == Simbolo
 bool Simbolo::operator==(Simbolo& other) {
@@ -28,7 +28,7 @@ bool Simbolo::operator==(Simbolo& other) {
 
 bool Simbolo::valido() {
     // Check if 'tipo' is a valid VariableType
-    if (this->tipo != INTEGER && this->tipo != UNDEFINED) {
+    if (this->tipo != INTEIRO && this->tipo != UNDEFINED && this->tipo != BOOLEANO) {
         std::cerr << "Valor 'tipo' invalido." << std::endl;
         return false;
     }
@@ -53,7 +53,7 @@ bool Simbolo::valido() {
 void Simbolo::show() {
     // Map enums to strings
     const char* categoryNames[] = {"VARIAVEL_SIMPLES", "PARAMETRO_FORMAL", "PROCEDURE"};
-    const char* variableTypeNames[] = {"INTEGER", "UNDEFINED"};
+    const char* variableTypeNames[] = {"INTEIRO", "BOOLEANO", "UNDEFINED"};
 
     std::cout << "identificador[" << this->identificador << "] ";
     std::cout << "tipo[" << variableTypeNames[this->tipo] << "] ";
@@ -71,7 +71,7 @@ int main() {
 
     symbol->show();
 
-    symbol->setTipo(INTEGER);
+    symbol->setTipo(INTEIRO);
 
     symbol->show();
 

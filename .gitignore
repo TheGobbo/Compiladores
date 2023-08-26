@@ -3,6 +3,8 @@
 *.gch
 *.tab.* 
 *.output
+Scanner*
+Parser*
 
 MEPA
 lex.yy.c 

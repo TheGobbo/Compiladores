@@ -1,7 +1,6 @@
 #ifndef SIMBOLO_HPP
 #define SIMBOLO_HPP
 
-#include <cstdint>
 #include <string>
 
 #define TAM_TOKEN 16
@@ -9,11 +8,11 @@
 // declarar dpois std::stack<Simbolo> tabelaDeSimbolos;
 typedef enum { VARIAVEL_SIMPLES, PARAMETRO_FORMAL, PROCEDURE } Category;
 typedef enum { BY_VALUE, BY_REFERENCE } PassageType;  // for formal parameters
-typedef enum { INTEGER, UNDEFINED } VariableType;
+typedef enum { INTEIRO, BOOLEANO, UNDEFINED } VariableType;
 
 class Simbolo {
    public:
-    Simbolo(char* identificador, Category categoria, int8_t nivel_lexico, int8_t deslocamento);
+    Simbolo(char* identificador, Category categoria, int nivel_lexico, int deslocamento);
 
     void setTipo(VariableType tipo);
 
@@ -21,8 +20,8 @@ class Simbolo {
     char* getIdent();
     VariableType getTipo();
     Category getCategoria();
-    int8_t getNivelLexico();
-    int8_t getDeslocamento();
+    int getNivelLexico();
+    int getDeslocamento();
 
     bool valido();
     bool operator==(Simbolo& other);
@@ -33,8 +32,8 @@ class Simbolo {
     char identificador[TAM_TOKEN];  // constant from start
     VariableType tipo{UNDEFINED};   // constant later
     Category categoria;             // constant from start
-    int8_t nivel_lexico{0};         // constant from start
-    int8_t deslocamento{0};         // constant from start
+    int nivel_lexico{0};            // constant from start
+    int deslocamento{0};            // constant from start
     // todo: atributos variaveis [params, ...]
 };
 

@@ -22,6 +22,8 @@ typedef enum simbolos {
     simb_array,
     simb_of,
     simb_var,
+    simb_integer,
+    simb_boolean,
     simb_procedure,
     simb_function,
     simb_goto,
@@ -44,12 +46,8 @@ typedef enum simbolos {
     simb_ponto,
     simb_abre_parenteses,
     simb_fecha_parenteses,
-
     simb_mais,
     simb_menos,
-    // simb_asterisco,
-    // simb_barra,
-
     simb_diferenca,
     simb_menor,
     simb_menor_igual,
@@ -64,14 +62,17 @@ typedef enum simbolos {
  * variáveis globais
  * ------------------------------------------------------------------- */
 
+extern std::deque<VariableType> stack_tipos;
 extern TabelaSimbolos TS;
-extern simbolos simbolo, relacao;
+extern simbolos simbolo;
+
 extern char meu_token[TAM_TOKEN];
-extern int8_t nivel_lexico;
-extern int8_t desloc;
+extern int nivel_lexico;
+extern int desloc;
+
 extern int num_line;
-extern int8_t num_amem;
-// extern char* yytext;
+extern int num_amem;
+extern int num_vars;
 
 extern bool print; /*helper*/
 
@@ -81,6 +82,9 @@ extern bool print; /*helper*/
 
 void geraCodigo(const char* rot, const char* comando);
 int yylex();
-// void yyerror(const char* s);
 
-void type_checker();
+void salvarTipos(simbolos simbolo);
+void operaTiposValidos(VariableType resultado);
+void operaTiposValidos();
+
+void print_tipos();

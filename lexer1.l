@@ -2,23 +2,18 @@
 %{
 #include <cstdlib>
 #include <iomanip>
-#include "Parser1.hpp"
+#include "Parser.hpp"
 #include "compilador.hpp"
 
-using namespace calc;
+using namespace bison;
 
 #define PADD std::left << std::setw(TAM_TOKEN) << std::setfill(' ')
 #define IMPRIME(STR) if(print) { std::cerr << PADD << STR << "\t# " << PADD << meu_token << num_line << '\n' ;}
 // #define IMPRIME(STR) {};
 
-int8_t nivel_lexico = 0;
-int num_line = 1;
-int8_t num_amem = 0;
-
-bool print = false;
 %}
 
-%option reentrant interactive noyywrap noyylineno nodefault outfile="Scanner1.cpp" header="Scanner1.hpp"
+%option reentrant interactive noyywrap noyylineno nodefault outfile="Scanner.cpp" header="Scanner.hpp"
 
 pulo_linha [\n]
 
@@ -73,7 +68,17 @@ var      { simbolo = simb_var;
           strncpy (meu_token, yytext, TAM_TOKEN);
           IMPRIME("var  ");
           return Parser::token::VAR;
- }
+}
+
+integer {   simbolo = simb_integer;
+            IMPRIME("integer ");
+            return Parser::token::INTEGER;
+}
+
+boolean {   simbolo = simb_boolean;
+            IMPRIME("boolean ");
+            return Parser::token::BOOLEAN;
+}
 
 procedure     { simbolo = simb_procedure;
           strncpy (meu_token, yytext, TAM_TOKEN);
@@ -271,7 +276,7 @@ end { simbolo = simb_end;
 int main() {
     yyscan_t scanner;
     yylex_init(&scanner);
-    calc::Parser parser{ scanner };
+    bison::Parser parser{ scanner };
     std::cout.precision(10);
     parser.parse();
     yylex_destroy(scanner);

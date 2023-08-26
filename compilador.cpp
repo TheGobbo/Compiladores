@@ -23,9 +23,18 @@
  *  variáveis globais
  * ------------------------------------------------------------------- */
 
+std::deque<VariableType> stack_tipos;
 TabelaSimbolos TS;
-simbolos simbolo, relacao;
+simbolos simbolo;
+
 char meu_token[TAM_TOKEN];
+int nivel_lexico = 0;
+
+int num_line = 1;
+int num_amem = 0;
+int num_vars = 0;
+
+bool print = false;
 
 static std::ofstream fp;  // Use an ofstream instead of FILE* for C++ file handling
 void geraCodigo(const char* rot, const char* comando) {
@@ -42,25 +51,63 @@ void geraCodigo(const char* rot, const char* comando) {
     }
 }
 
-int imprimeErro(const char* erro) {
-    std::cerr << "Erro na linha " << num_line << " - " << erro << '\n';
-    std::exit(-1);  // Use std::exit to terminate the program
+// espelho de bison::Parse::error
+void error(const std::string& msg) {
+    std::cerr << msg << " at line " << num_line << '\n';
+    exit(0);
 }
 
-void type_checker() {
-    TS.show();
-    // char l, r;
-    // l = TS.(s);
-    // r = stack_pop(s);
-    // // printf("l(%c) r(%c)\n", l, r);
+void salvarTipos(simbolos simbolo) {
+    VariableType tipo = simbolo == simb_integer   ? INTEIRO
+                        : simbolo == simb_boolean ? BOOLEANO
+                                                  : UNDEFINED;
 
-    // if (l != r) {
-    //     char erro[40];
-    //     sprintf(erro, "Types must be equal! %c <> %c", l, r);
-    //     imprimeErro(erro);
-    //     // printf("Error in line : %d\n", num_line);
-    //     // yyerror("Types must be equal!\n");
-    // }  // else l == r :
+    if (tipo == UNDEFINED) {
+        error("undefined type at line ");
+    }
 
-    // stack_push(s, r);
+    TS.setTipos(tipo);
+}
+
+void operaTiposValidos(VariableType resultado) {
+    VariableType l, r;
+    print_tipos();
+    l = stack_tipos.back();
+    stack_tipos.pop_back();
+
+    r = stack_tipos.back();
+    stack_tipos.pop_back();
+
+    if (l != r) {
+        error("type mismatch at line ");
+    }
+    stack_tipos.push_back(resultado);
+    print_tipos();
+}
+
+void operaTiposValidos() {
+    VariableType l, r;
+    print_tipos();
+    l = stack_tipos.back();
+    stack_tipos.pop_back();
+
+    r = stack_tipos.back();
+    stack_tipos.pop_back();
+
+    if (l != r) {
+        error("type mismatch at line ");
+    }
+
+    print_tipos();
+}
+
+void print_tipos() {
+    const char* variableTypeNames[] = {"INTEIRO", "BOOLEANO", "UNDEFINED"};
+    std::cout << "stack_tipos : (front) ";
+    for (auto it = stack_tipos.begin(); it != stack_tipos.end(); ++it) {
+        if (it != stack_tipos.begin()) std::cout << ", ";
+        std::cout << variableTypeNames[*it];
+    }
+
+    std::cout << " (back)" << std::endl;
 }
