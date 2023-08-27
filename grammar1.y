@@ -239,9 +239,9 @@ expr_simples: expr_simples MAIS  termo { operaTiposValidos(VariableType::INTEIRO
 ;
 
 /* 28. */
-termo       : fator MULT fator { operaTiposValidos(VariableType::INTEIRO); geraCodigo(NULL, "MULT");}
-            | fator DIV  fator { operaTiposValidos(VariableType::INTEIRO); geraCodigo(NULL, "DIVI");}
-            | fator AND  fator { operaTiposValidos(VariableType::BOOLEANO);geraCodigo(NULL, "CONJ");}
+termo       : termo MULT fator { operaTiposValidos(VariableType::INTEIRO); geraCodigo(NULL, "MULT");}
+            | termo DIV  fator { operaTiposValidos(VariableType::INTEIRO); geraCodigo(NULL, "DIVI");}
+            | termo AND  fator { operaTiposValidos(VariableType::BOOLEANO);geraCodigo(NULL, "CONJ");}
             | fator
 ;
 
