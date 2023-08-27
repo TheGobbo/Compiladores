@@ -6,6 +6,10 @@
 #include <cmath>
 #include "Scanner.hpp"
 #include "compilador.hpp"
+
+#define flags(STR) std::cerr << "\033[1;31m" << STR << "\033[0m\n"
+#define flag std::cerr << "\033[1;31mFLAG\033[0m\n"
+
 %}
  
 %require "3.7.4"
@@ -36,8 +40,8 @@
 %token DIFERENCA MENOR MENOR_IGUAL MAIOR_IGUAL MAIOR IGUALDADE
 %token INTEGER BOOLEAN TRUE FALSE 
 
-%left MAIS MENOS
-%left MULT DIV MODULO
+%nonassoc LOWER_THEN_ELSE
+%nonassoc ELSE
 %%
 
 /* 1. */
@@ -166,19 +170,19 @@ comando : NUMERO DOIS_PONTOS comando_sem_rotulo
 comando_sem_rotulo  : atribuicao 
                     | comando_composto
                     | comando_repetitivo
+                    | comando_condicional
                     | READ  ABRE_PARENTESES lista_read FECHA_PARENTESES
                     | WRITE ABRE_PARENTESES lista_write FECHA_PARENTESES
 //                      | chamada_procedimento
 //                      | desvio 
-//                      | comando_condicional
 ;
 
 lista_read  : lista_read VIRGULA IDENT  { geraCodigoRead(); }
             | IDENT                     { geraCodigoRead(); }
 ;
 
-lista_write : lista_write VIRGULA IDENT { geraCodigoWrite(); }   
-            | IDENT                     { geraCodigoWrite(); }   
+lista_write : lista_write VIRGULA fator { geraCodigoWrite(); }   
+            | fator                     { geraCodigoWrite(); }   
 ;
 
 // 
@@ -196,9 +200,10 @@ atribuicao  : variavel { addr_variavel = getAddrLex(); } ATRIBUICAO expr { geraC
 // ;
 // 
 // /* 22. */
-// comando_condicional  : IF expr THEN comando_sem_rotulo
-//                      | IF expr THEN comando_sem_rotulo ELSE comando_sem_rotulo
-// ;
+comando_condicional  : if_then  %prec LOWER_THEN_ELSE { popRotulo(); } 
+                     | if_then ELSE { jumpTopoSempre(); popPenultRotulo(); } comando_sem_rotulo { popRotulo(); }
+;
+if_then             : IF expr { jumpTopoSeFalso(); } THEN comando_sem_rotulo
 // 
 // /* 23. */
 comando_repetitivo  : 
@@ -213,7 +218,7 @@ comando_repetitivo  :
 // 
 // /* 25. & 26. */
 expr        : expr_simples 
-            | expr_simples DIFERENCA   expr_simples { operaTiposValidos(VariableType::BOOLEANO); geraCodigo(NULL, "CMDF"); }
+            | expr_simples DIFERENCA   expr_simples { operaTiposValidos(VariableType::BOOLEANO); geraCodigo(NULL, "CMDG"); }
             | expr_simples IGUALDADE   expr_simples { operaTiposValidos(VariableType::BOOLEANO); geraCodigo(NULL, "CMIG"); }
             | expr_simples MENOR_IGUAL expr_simples { operaTiposValidos(VariableType::BOOLEANO); geraCodigo(NULL, "CMEG"); }
             | expr_simples MAIOR_IGUAL expr_simples { operaTiposValidos(VariableType::BOOLEANO); geraCodigo(NULL, "CMAG"); }
@@ -222,14 +227,15 @@ expr        : expr_simples
 ;
 
 /* 27. */
-expr_simples: opt_sinal conteudo 
-;
-/* 27. */
-opt_sinal   : MAIS | MENOS | /* vazio */;
-conteudo    : conteudo oper | termo ;
-oper        : MAIS  termo { operaTiposValidos(VariableType::INTEIRO); geraCodigo(NULL, "SOMA");}  
-            | MENOS termo { operaTiposValidos(VariableType::INTEIRO); geraCodigo(NULL, "SUBT");}  
-            | OR    termo { operaTiposValidos(VariableType::BOOLEANO);geraCodigo(NULL, "DISJ");}
+// expr_simples: opt_sinal conteudo 
+// ;
+// /* 27. */
+// opt_sinal   : MAIS | MENOS | /* vazio */;
+// conteudo    : conteudo oper | termo ;
+expr_simples: expr_simples MAIS  termo { operaTiposValidos(VariableType::INTEIRO); geraCodigo(NULL, "SOMA");}  
+            | expr_simples MENOS termo { operaTiposValidos(VariableType::INTEIRO); geraCodigo(NULL, "SUBT");}  
+            | expr_simples OR    termo { operaTiposValidos(VariableType::BOOLEANO);geraCodigo(NULL, "DISJ");}
+            | termo
 ;
 
 /* 28. */
@@ -240,16 +246,13 @@ termo       : fator MULT fator { operaTiposValidos(VariableType::INTEIRO); geraC
 ;
 
 /* 29. */
-fator   : variavel  { geraCodigo(NULL, "CRVL" + getAddrLex()); }
-        | NOT fator
-        | NUMERO { 
-            geraCodigo(NULL, "CRCT " + std::string(meu_token));
-            stack_tipos.push_back(INTEIRO);
-        }
-        | TRUE  { stack_tipos.push_back(VariableType::BOOLEANO); geraCodigo(NULL, "CRCT 1"); }  
-        | FALSE { stack_tipos.push_back(VariableType::BOOLEANO); geraCodigo(NULL, "CRCT 0"); }     
-        /* | chamada_funcao */
+fator   : variavel  { geraCodigo(NULL, "CRVL" + getAddrLex()); std::cout << "GERADO CRVL PARA : " << meu_token << '\n';}
+        | NUMERO    { geraCodigo(NULL, "CRCT " + std::string(meu_token)); stack_tipos.push_back(INTEIRO); }
+        | TRUE      { geraCodigo(NULL, "CRCT 1"); stack_tipos.push_back(VariableType::BOOLEANO); }  
+        | FALSE     { geraCodigo(NULL, "CRCT 0"); stack_tipos.push_back(VariableType::BOOLEANO); }     
         | ABRE_PARENTESES expr FECHA_PARENTESES
+        /* | NOT fator */
+        /* | chamada_funcao */
 ;
 
 /* 30. */   /* ERRO se != VS, PF ou Func */

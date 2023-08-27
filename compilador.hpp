@@ -63,30 +63,6 @@ typedef enum simbolos {
     simb_identificador,
 } simbolos;
 
-/*
-namespace MEPA {
-const char* READ = "\tLEIT ";
-const char* WRITE = "\tIMPR ";
-const char* STORE = "\tARMZ ";
-const char* LOADV = "\tCRVL ";
-const char* LOADC = "\tCRCT ";
-const char* JUMP = "\tDSVS ";
-const char* JUMP_SE = "\tDSVF ";
-const char* MAIOR_IGUAL = "\tCMEG ";
-const char* MENOR_IGUAL = "\tCMAG ";
-const char* MENOR = "\tCMME ";
-const char* MAIOR = "\tCMMA ";
-const char* IGUAL = "\tCMIG ";
-const char* DIFF = "\tCMDF ";
-const char* SOMA = "\tSOMA ";
-const char* SUBT = "\tSUBT ";
-const char* DIV = "\tDIVI ";
-const char* MULT = "\tMULT ";
-const char* OR = "\tDISJ ";
-const char* AND = "\tCONJ ";
-}  // namespace MEPA
-*/
-
 /* -------------------------------------------------------------------
  * variáveis globais
  * ------------------------------------------------------------------- */
@@ -113,33 +89,6 @@ extern bool print; /*helper*/
  * prototipos globais
  * ------------------------------------------------------------------- */
 
-/*
-template <typename T, typename... Types>
-void geraCodigo(T var1, Types... var2);
-
-void geraCodigo() {
-    fp << '\n';
-    fp.flush();
-}
-
-/* geraCodigo(1, 2, 3, 4) prints "1, 2, 3, 4\n"
-template <typename T, typename... Types>
-void geraCodigo(T var1, Types... var2) {
-    if (!fp.is_open()) {
-        fp.open("MEPA");  // Open the file "MEPA" for writing
-    }
-    fp << var1;
-
-    if constexpr (std::is_same_v<T, const char*>) {
-        if(var1 && *var1 == 'R')
-        fp << ": ";
-    }
-
-    fp.flush();
-
-    geraCodigo(var2...);
-}
-*/
 void geraCodigo(const char* rot, std::string comando);
 
 void geraCodigoWrite();
@@ -149,9 +98,14 @@ void geraCodigoWhile();
 void geraCodigoDo();
 void geraCodigoEndWhile();
 
+void jumpTopoSeFalso();
+void jumpTopoSempre();
+void popRotulo();
+
 std::string getAddrLex();
 std::string novoRotulo();
 std::string getRotulo();
+void popPenultRotulo();
 
 void salvarVariavel();
 void salvarTipos(simbolos simbolo);

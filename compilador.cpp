@@ -88,22 +88,7 @@ std::string getAddrLex() {
     std::string nl = std::to_string(simbolo->getNivelLexico());
     std::string ds = std::to_string(simbolo->getDeslocamento());
 
-    return " " + nl + " " + ds;
-}
-
-std::string novoRotulo() {
-    if (num_rots >= 255) {
-        error("stack overflow: stack_rotulo");
-    }
-    num_rots = num_rots + 1;
-    stack_rotulos.push_back(num_rots);
-    return getRotulo();
-}
-
-std::string getRotulo() {
-    std::ostringstream rotulo;
-    rotulo << "R" << std::setfill('0') << std::setw(3) << (int)stack_rotulos.back();
-    return rotulo.str();
+    return " " + nl + ", " + ds;
 }
 
 /* -------------------------------------------------------------------
@@ -129,7 +114,7 @@ void geraCodigoRead() {
     geraCodigo(NULL, "ARMZ" + getAddrLex());
 }
 void geraCodigoWrite() {
-    geraCodigo(NULL, "CRVL" + getAddrLex());
+    // geraCodigo(NULL, "CRVL" + getAddrLex());
     geraCodigo(NULL, "IMPR");
 }
 
@@ -151,6 +136,55 @@ void geraCodigoEndWhile() {
 
     geraCodigo(NULL, "DSVS " + begin);
     geraCodigo(end.c_str(), "NADA");
+}
+
+void jumpTopoSeFalso() {
+    geraCodigo(NULL, "DSVF " + novoRotulo());
+    std::cout << ">>>>>>>>> PUSH ROT : " << getRotulo() << '\n';
+}
+void jumpTopoSempre() {
+    geraCodigo(NULL, "DSVS " + novoRotulo());
+    std::cout << ">>>>>>>>> PUSH ROT : " << getRotulo() << '\n';
+}
+void popRotulo() {
+    std::size_t rot_size = stack_rotulos.size();
+    if (rot_size < 1) {
+        error("stack underflow on rotulos");
+    }
+    std::string topo = getRotulo();
+    stack_rotulos.pop_back();
+    std::cout << ">>>>>>>>> POP ROT : " << topo << '\n';
+
+    geraCodigo(topo.c_str(), "NADA");
+}
+
+void popPenultRotulo() {
+    std::size_t rot_size = stack_rotulos.size();
+    if (rot_size < 2) {
+        error("stack underflow on rotulos");
+    }
+
+    std::ostringstream rotulo;
+    rotulo << "R" << std::setfill('0') << std::setw(3) << (int)stack_rotulos.at(rot_size - 2);
+    geraCodigo(rotulo.str().c_str(), "NADA");
+    std::cout << ">>>>>>>>> POP ROT : " << rotulo.str() << '\n';
+
+    stack_rotulos.erase(stack_rotulos.end() - 2);
+}
+
+std::string novoRotulo() {
+    if (num_rots >= 255) {
+        error("stack overflow: stack_rotulo");
+    }
+    num_rots = num_rots + 1;
+    stack_rotulos.push_back(num_rots);
+    return getRotulo();
+}
+
+std::string getRotulo() {
+    std::ostringstream rotulo;
+    rotulo << "R" << std::setfill('0') << std::setw(3) << (int)stack_rotulos.back();
+    return rotulo.str();
 }
 
 /* -------------------------------------------------------------------

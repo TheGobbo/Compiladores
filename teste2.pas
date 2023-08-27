@@ -1,23 +1,46 @@
 program comandoWhile(input, output);
-var n, k : integer;
-    f1, f2, f3 : integer;
-    b : boolean;
+var a1 : integer;
+var b1 : boolean;
 begin 
-
-    b := true;
-    write(b);
-    b := false;
-    write(b);
-
-    read(n);
-    f1 := 0; f2 := 1; k := 1;
-    while (k <= n) do
-    begin 
-        f3 := f2 + f1;
-        f1 := f2;
-        f2 := f3;
-        k := k + 1;
+    a1 := 1;
+    while(a1 > 0) do
+    begin
+        write(5);
+        while(a1 > 0) do
+        begin
+            write(4);
+            while(a1 > 0) do
+            begin
+                write(3);
+                while(a1 > 0) do
+                begin
+                    write(2);
+                    while(a1 > 0) do
+                    begin
+                        write(1);
+                        a1 := a1 - 1;
+                    end;
+                end;
+            end;
+        end;
     end;
-    write(n, k);
+
+    b1 := true;
+    if(b1 <> false) then
+        if(b1 = true) then
+            if(b1 <> true) then 
+                write(999)
+            else
+                if (a1 = 0) then
+                    write(1)
+                else 
+                    write(998)
+        else 
+            write(997)
+    else 
+        write(996);
+
+    write(2);
+
 end.
 
