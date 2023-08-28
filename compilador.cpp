@@ -24,8 +24,6 @@
  *  variáveis globais
  * ------------------------------------------------------------------- */
 
-static std::ofstream fp;  // Para geracao de codigo MEPA
-
 std::deque<VariableType> stack_tipos;
 std::deque<char> stack_rotulos;
 TabelaSimbolos TS;
@@ -88,103 +86,7 @@ std::string getAddrLex() {
     std::string nl = std::to_string(simbolo->getNivelLexico());
     std::string ds = std::to_string(simbolo->getDeslocamento());
 
-    return " " + nl + ", " + ds;
-}
-
-/* -------------------------------------------------------------------
- * funcoes de codigo MEPA
- * ------------------------------------------------------------------- */
-
-void geraCodigo(const char* rot, std::string comando) {
-    if (!fp.is_open()) {
-        fp.open("MEPA");  // Open the file "MEPA" for writing
-    }
-
-    if (rot == nullptr) {
-        fp << "     " << comando << '\n';
-        fp.flush();  // Flush the output to the file
-    } else {
-        fp << rot << ": " << comando << '\n';
-        fp.flush();  // Flush the output to the file
-    }
-}
-
-void geraCodigoRead() {
-    geraCodigo(NULL, "LEIT");
-    geraCodigo(NULL, "ARMZ" + getAddrLex());
-}
-void geraCodigoWrite() {
-    // geraCodigo(NULL, "CRVL" + getAddrLex());
-    geraCodigo(NULL, "IMPR");
-}
-
-void geraCodigoAtribuicao() {
-    operaTiposValidos();
-    geraCodigo(NULL, "ARMZ" + addr_variavel);
-}
-
-void geraCodigoWhile() { geraCodigo(novoRotulo().c_str(), "NADA"); }
-void geraCodigoDo() { geraCodigo(NULL, "DSVF " + novoRotulo()); }
-
-void geraCodigoEndWhile() {
-    std::string begin, end;
-    end = getRotulo();
-    stack_rotulos.pop_back();
-
-    begin = getRotulo();
-    stack_rotulos.pop_back();
-
-    geraCodigo(NULL, "DSVS " + begin);
-    geraCodigo(end.c_str(), "NADA");
-}
-
-void jumpTopoSeFalso() {
-    geraCodigo(NULL, "DSVF " + novoRotulo());
-    std::cout << ">>>>>>>>> PUSH ROT : " << getRotulo() << '\n';
-}
-void jumpTopoSempre() {
-    geraCodigo(NULL, "DSVS " + novoRotulo());
-    std::cout << ">>>>>>>>> PUSH ROT : " << getRotulo() << '\n';
-}
-void popRotulo() {
-    std::size_t rot_size = stack_rotulos.size();
-    if (rot_size < 1) {
-        error("stack underflow on rotulos");
-    }
-    std::string topo = getRotulo();
-    stack_rotulos.pop_back();
-    std::cout << ">>>>>>>>> POP ROT : " << topo << '\n';
-
-    geraCodigo(topo.c_str(), "NADA");
-}
-
-void popPenultRotulo() {
-    std::size_t rot_size = stack_rotulos.size();
-    if (rot_size < 2) {
-        error("stack underflow on rotulos");
-    }
-
-    std::ostringstream rotulo;
-    rotulo << "R" << std::setfill('0') << std::setw(3) << (int)stack_rotulos.at(rot_size - 2);
-    geraCodigo(rotulo.str().c_str(), "NADA");
-    std::cout << ">>>>>>>>> POP ROT : " << rotulo.str() << '\n';
-
-    stack_rotulos.erase(stack_rotulos.end() - 2);
-}
-
-std::string novoRotulo() {
-    if (num_rots >= 255) {
-        error("stack overflow: stack_rotulo");
-    }
-    num_rots = num_rots + 1;
-    stack_rotulos.push_back(num_rots);
-    return getRotulo();
-}
-
-std::string getRotulo() {
-    std::ostringstream rotulo;
-    rotulo << "R" << std::setfill('0') << std::setw(3) << (int)stack_rotulos.back();
-    return rotulo.str();
+    return nl + ", " + ds;
 }
 
 /* -------------------------------------------------------------------

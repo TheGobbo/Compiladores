@@ -1,10 +1,10 @@
 %.o: %.cpp
 	@g++ -c $< -o $@
 
-all: Simbolo.o TabelaSimbolos.o compilador.o
+all: Simbolo.o TabelaSimbolos.o compilador.o Mepa.o
 	@flex lexer1.l
 	@bison grammar1.y 
-	@g++ -o compilador Scanner.cpp Parser.cpp Simbolo.o TabelaSimbolos.o compilador.o
+	@g++ -o compilador Scanner.cpp Parser.cpp Simbolo.o TabelaSimbolos.o compilador.o Mepa.o
 
 run: all 
 	./compilador < teste2.pas

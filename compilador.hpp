@@ -11,6 +11,9 @@
  *
  * ------------------------------------------------------------------- */
 
+#ifndef COMPILADOR_HPP
+#define COMPILADOR_HPP
+
 #define TAM_TOKEN 16
 
 #include "TabelaSimbolos.hpp"
@@ -89,24 +92,6 @@ extern bool print; /*helper*/
  * prototipos globais
  * ------------------------------------------------------------------- */
 
-void geraCodigo(const char* rot, std::string comando);
-
-void geraCodigoWrite();
-void geraCodigoRead();
-void geraCodigoAtribuicao();
-void geraCodigoWhile();
-void geraCodigoDo();
-void geraCodigoEndWhile();
-
-void jumpTopoSeFalso();
-void jumpTopoSempre();
-void popRotulo();
-
-std::string getAddrLex();
-std::string novoRotulo();
-std::string getRotulo();
-void popPenultRotulo();
-
 void salvarVariavel();
 void salvarTipos(simbolos simbolo);
 void operaTiposValidos(VariableType resultado);
@@ -114,3 +99,5 @@ void operaTiposValidos();
 
 void print_tipos();
 void error(const std::string& msg);
+
+#endif  // COMPILADOR_HPP

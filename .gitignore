@@ -5,7 +5,7 @@
 *.output
 Scanner*
 Parser*
-Mepa*
+
 aula*
 MEPA
 lex.yy.c 
