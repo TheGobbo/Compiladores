@@ -15,7 +15,6 @@
 #include "compilador.hpp"
 
 #include <cstdlib>
-#include <fstream>
 #include <iomanip>
 #include <iostream>
 #include <string>
@@ -23,6 +22,8 @@
 /* -------------------------------------------------------------------
  *  variáveis globais
  * ------------------------------------------------------------------- */
+
+MepaInterface MEPA;
 
 std::deque<VariableType> stack_tipos;
 std::deque<char> stack_rotulos;
@@ -87,6 +88,60 @@ std::string getAddrLex() {
     std::string ds = std::to_string(simbolo->getDeslocamento());
 
     return nl + ", " + ds;
+}
+
+void popPenultRotulo() {
+    std::size_t rot_size = stack_rotulos.size();
+    if (rot_size < 2) {
+        error("stack underflow on rotulos");
+    }
+
+    std::ostringstream rotulo;
+    rotulo << "R" << std::setfill('0') << std::setw(3) << (int)stack_rotulos.at(rot_size - 2);
+    // geraCodigo_(MEPA::ROTULO(rotulo.str()));
+    MEPA.rotAddrNome(rotulo.str(), "NADA");
+
+    stack_rotulos.erase(stack_rotulos.end() - 2);
+}
+
+std::string novoRotulo() {
+    if (num_rots >= 255) {
+        error("stack overflow: stack_rotulo");
+    }
+    stack_rotulos.push_back(num_rots);
+    num_rots = num_rots + 1;
+    return getRotulo();
+}
+
+std::string getRotulo() {
+    std::ostringstream rotulo;
+    rotulo << "R" << std::setfill('0') << std::setw(3) << (int)stack_rotulos.back();
+    return rotulo.str();
+}
+
+void popRotulo() {
+    std::size_t rot_size = stack_rotulos.size();
+    if (rot_size < 1) {
+        error("stack underflow on rotulos");
+    }
+    std::string topo = getRotulo();
+    stack_rotulos.pop_back();
+
+    MEPA.rotAddrNome(topo, "NADA");
+}
+
+void geraCodigoEndWhile() {
+    std::string begin, end;
+    end = getRotulo();
+    stack_rotulos.pop_back();
+
+    begin = getRotulo();
+    stack_rotulos.pop_back();
+
+    // geraCodigo_(MEPA::JUMP, begin);
+    // geraCodigo_(MEPA::ROTULO(end));
+    MEPA.JumpTo(begin);
+    MEPA.rotAddrNome(end, "NADA");
 }
 
 /* -------------------------------------------------------------------

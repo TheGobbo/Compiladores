@@ -16,6 +16,7 @@
 
 #define TAM_TOKEN 16
 
+#include "MepaInterface.hpp"
 #include "TabelaSimbolos.hpp"
 
 typedef enum simbolos {
@@ -72,6 +73,7 @@ typedef enum simbolos {
 
 extern std::deque<VariableType> stack_tipos;
 extern std::deque<char> stack_rotulos;
+extern MepaInterface MEPA;
 extern TabelaSimbolos TS;
 extern simbolos simbolo;
 
@@ -97,6 +99,16 @@ void salvarTipos(simbolos simbolo);
 void operaTiposValidos(VariableType resultado);
 void operaTiposValidos();
 
+std::string getAddrLex();
+
+void popRotulo();
+void popPenultRotulo();
+std::string novoRotulo();
+std::string getRotulo();
+
+void geraCodigoEndWhile();
+
+/* utils */
 void print_tipos();
 void error(const std::string& msg);
 

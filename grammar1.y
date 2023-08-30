@@ -6,7 +6,6 @@
 #include <cmath>
 #include "Scanner.hpp"
 #include "compilador.hpp"
-#include "Mepa.hpp"
 
 #define flags(STR) std::cerr << "\033[1;31m" << STR << "\033[0m\n"
 #define flag std::cerr << "\033[1;31mFLAG\033[0m\n"
@@ -46,18 +45,18 @@
 %%
 
 /* 1. */
-programa    : { geraCodigo_ (MEPA::START); }
+programa    : { MEPA.Start(); }
             PROGRAM IDENT
             ABRE_PARENTESES lista_idents FECHA_PARENTESES PONTO_E_VIRGULA
             bloco PONTO {
-            geraCodigo_ (MEPA::FINISH);
-            TS.show();
+                MEPA.Finish();
+                TS.show();
             }
 ;
 
 /* 2. */
 bloco       : parte_declara_vars { /* AMEM */
-                geraCodigo_(MEPA::ALLOC, std::to_string(num_amem));
+                MEPA.Alloc(num_amem);
             }
             
             comando_composto 
@@ -66,7 +65,7 @@ bloco       : parte_declara_vars { /* AMEM */
             /* | parte_declara_subrot  */
 
             {
-                geraCodigo_(MEPA::FREE, std::to_string(num_amem));
+                MEPA.Free(num_amem);
                 num_amem = 0;
             }
 ;
@@ -179,17 +178,17 @@ comando_sem_rotulo  : atribuicao
 //                      | desvio 
 ;
 
-lista_read  : lista_read VIRGULA IDENT  { geraCodigoRead(); }
-            | IDENT                     { geraCodigoRead(); }
+lista_read  : lista_read VIRGULA IDENT  { MEPA.Read(); }
+            | IDENT                     { MEPA.Read(); }
 ;
 
-lista_write : lista_write VIRGULA fator { geraCodigo_(MEPA::WRITE); }   
-            | fator                     { geraCodigo_(MEPA::WRITE); }   
+lista_write : lista_write VIRGULA fator { MEPA.Write(); }   
+            | fator                     { MEPA.Write(); }   
 ;
 
 // 
 // /* 19. */
-atribuicao  : variavel { addr_variavel = getAddrLex(); } ATRIBUICAO expr { geraCodigoAtribuicao(); }
+atribuicao  : variavel { addr_variavel = getAddrLex(); } ATRIBUICAO expr { MEPA.Atribuicao(); }
 ;
 
 // /* 20. */
@@ -203,14 +202,14 @@ atribuicao  : variavel { addr_variavel = getAddrLex(); } ATRIBUICAO expr { geraC
 // 
 // /* 22. */
 comando_condicional  : if_then  %prec LOWER_THEN_ELSE { popRotulo(); } 
-                     | if_then ELSE { jumpTopoSempre(); popPenultRotulo(); } comando_sem_rotulo { popRotulo(); }
+                     | if_then ELSE { MEPA.JumpTo(novoRotulo()); popPenultRotulo(); } comando_sem_rotulo { popRotulo(); }
 ;
-if_then             : IF expr { jumpTopoSeFalso(); } THEN comando_sem_rotulo
+if_then             : IF expr { MEPA.IfJumpTo(novoRotulo()); } THEN comando_sem_rotulo
 // 
 // /* 23. */
 comando_repetitivo  : 
-            WHILE { geraCodigo_(MEPA::ROTULO(novoRotulo())); } expr DO 
-                { jumpTopoSeFalso(); } comando_sem_rotulo { geraCodigoEndWhile();}
+            WHILE { MEPA.rotAddrNome(novoRotulo()); } expr DO 
+                { MEPA.IfJumpTo(novoRotulo()); } comando_sem_rotulo { geraCodigoEndWhile(); }
 ;
 // 
 // /* 24. */
@@ -220,12 +219,12 @@ comando_repetitivo  :
 // 
 // /* 25. & 26. */
 expr        : expr_simples 
-            | expr_simples DIFERENCA   expr_simples { operaTiposValidos(VariableType::BOOLEANO); geraCodigo_(MEPA::DIFF); }
-            | expr_simples IGUALDADE   expr_simples { operaTiposValidos(VariableType::BOOLEANO); geraCodigo_(MEPA::IGUAL); }
-            | expr_simples MENOR_IGUAL expr_simples { operaTiposValidos(VariableType::BOOLEANO); geraCodigo_(MEPA::MENOR_IGUAL); }
-            | expr_simples MAIOR_IGUAL expr_simples { operaTiposValidos(VariableType::BOOLEANO); geraCodigo_(MEPA::MAIOR_IGUAL); }
-            | expr_simples MENOR       expr_simples { operaTiposValidos(VariableType::BOOLEANO); geraCodigo_(MEPA::MENOR); }
-            | expr_simples MAIOR       expr_simples { operaTiposValidos(VariableType::BOOLEANO); geraCodigo_(MEPA::MAIOR); }
+            | expr_simples DIFERENCA   expr_simples { MEPA.Operacao(MEPA.DIFF, VariableType::BOOLEANO);  }
+            | expr_simples IGUALDADE   expr_simples { MEPA.Operacao(MEPA.IGUAL, VariableType::BOOLEANO);  }
+            | expr_simples MENOR_IGUAL expr_simples { MEPA.Operacao(MEPA.MENOR_IGUAL, VariableType::BOOLEANO);  }
+            | expr_simples MAIOR_IGUAL expr_simples { MEPA.Operacao(MEPA.MAIOR_IGUAL, VariableType::BOOLEANO);  }
+            | expr_simples MENOR       expr_simples { MEPA.Operacao(MEPA.MENOR, VariableType::BOOLEANO);  }
+            | expr_simples MAIOR       expr_simples { MEPA.Operacao(MEPA.MAIOR, VariableType::BOOLEANO);  }
 ;
 
 /* 27. */
@@ -234,24 +233,24 @@ expr        : expr_simples
 // /* 27. */
 // opt_sinal   : MAIS | MENOS | /* vazio */;
 // conteudo    : conteudo oper | termo ;
-expr_simples: expr_simples MAIS  termo { operaTiposValidos(VariableType::INTEIRO); geraCodigo_(MEPA::SOMA);}  
-            | expr_simples MENOS termo { operaTiposValidos(VariableType::INTEIRO); geraCodigo_(MEPA::SUBT);}  
-            | expr_simples OR    termo { operaTiposValidos(VariableType::BOOLEANO);geraCodigo_(MEPA::OR);}
+expr_simples: expr_simples MAIS  termo { MEPA.Operacao(MEPA.SOMA, VariableType::INTEIRO); }   
+            | expr_simples MENOS termo { MEPA.Operacao(MEPA.SUBT, VariableType::INTEIRO); }   
+            | expr_simples OR    termo { MEPA.Operacao(MEPA.OR, VariableType::BOOLEANO); } 
             | termo
 ;
 
 /* 28. */
-termo       : termo MULT fator { operaTiposValidos(VariableType::INTEIRO); geraCodigo_(MEPA::MULT);}
-            | termo DIV  fator { operaTiposValidos(VariableType::INTEIRO); geraCodigo_(MEPA::DIV);}
-            | termo AND  fator { operaTiposValidos(VariableType::BOOLEANO);geraCodigo_(MEPA::AND);}
+termo       : termo MULT fator { MEPA.Operacao(MEPA.MULT, VariableType::INTEIRO); } 
+            | termo DIV  fator { MEPA.Operacao(MEPA.DIV, VariableType::INTEIRO); } 
+            | termo AND  fator { MEPA.Operacao(MEPA.AND, VariableType::BOOLEANO); } 
             | fator
 ;
 
 /* 29. */
-fator   : variavel  { geraCodigo_(MEPA::LOADV, getAddrLex()); }
-        | NUMERO    { geraCodigo_(MEPA::LOADC, std::string(meu_token)); stack_tipos.push_back(INTEIRO); }
-        | TRUE      { geraCodigo_(MEPA::LOADC, std::to_string(1)); stack_tipos.push_back(VariableType::BOOLEANO); }  
-        | FALSE     { geraCodigo_(MEPA::LOADC, std::to_string(0)); stack_tipos.push_back(VariableType::BOOLEANO); }     
+fator   : variavel  { MEPA.LoadFrom(getAddrLex()); }
+        | NUMERO    { MEPA.LoadValue(std::string(meu_token)); stack_tipos.push_back(VariableType::INTEIRO); }
+        | TRUE      { MEPA.LoadValue(std::to_string(1)); stack_tipos.push_back(VariableType::BOOLEANO); }  
+        | FALSE     { MEPA.LoadValue(std::to_string(0)); stack_tipos.push_back(VariableType::BOOLEANO); }     
         | ABRE_PARENTESES expr FECHA_PARENTESES
         /* | NOT fator */
         /* | chamada_funcao */
