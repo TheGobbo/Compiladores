@@ -25,6 +25,10 @@ class MepaInterface {
     void LoadFrom(std::string addr_lex);
     void LoadValue(std::string value);
 
+    void ProcInit(std::string rotulo, int nivel_lexico);
+    void CallProc(std::string rotulo, int nivel_lexico);
+    void ProcEnd(int nivel_lexico, int num_params);
+
     void Alloc(int num_alloc);
     void Free(int num_free);
 
@@ -66,7 +70,7 @@ class MepaInterface {
 
    private:
     std::ofstream mepa_stream;
-    std::string mepa_file{"MEPA"};
+    std::string mepa_file;
 
     template <typename T, typename... Types>
     void geraCodigo_(T var1, Types... var2);

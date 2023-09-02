@@ -3,6 +3,7 @@
 
 #include <fstream>
 #include <iomanip>
+#include <iostream>
 
 #include "compilador.hpp"
 
@@ -10,9 +11,11 @@
  * MEPA STREAM
  * ------------------------------------------------------------------- */
 
-MepaInterface::MepaInterface() { this->mepa_stream.open(this->mepa_file); }
+MepaInterface::MepaInterface() : mepa_file{"MEPA"} { this->mepa_stream.open(this->mepa_file); }
 
-MepaInterface::MepaInterface(std::string mepa_file) : mepa_file{mepa_file} { MepaInterface(); }
+MepaInterface::MepaInterface(std::string mepa_file) : mepa_file{mepa_file} {
+    this->mepa_stream.open(this->mepa_file);
+}
 
 void MepaInterface::geraCodigo_() {
     this->mepa_stream << '\n';
@@ -27,6 +30,7 @@ void MepaInterface::geraCodigo_(T var1, Types... var2) {
     }
     this->mepa_stream << var1;
 
+    std::cout << var1 << '\n';
     // if constexpr (std::is_same_v<T, const char*>) {
     //     if (var1 && *var1 == 'R') this->mepa_stream << ": ";
     // }
@@ -72,9 +76,28 @@ void MepaInterface::LoadFrom(std::string addr_lex) { geraCodigo_(this->LOADV, ad
 
 void MepaInterface::LoadValue(std::string value) { geraCodigo_(this->LOADC, value); }
 
-void MepaInterface::Alloc(int num_alloc) { geraCodigo_(this->ALLOC, num_alloc); }
+void MepaInterface::Alloc(int num_alloc) {
+    if (num_alloc <= 0) return;
+    geraCodigo_(this->ALLOC, num_alloc);
+}
 
-void MepaInterface::Free(int num_free) { geraCodigo_(this->FREE, num_free); }
+void MepaInterface::Free(int num_free) {
+    if (num_free <= 0) return;
+    geraCodigo_(this->FREE, num_free);
+}
+
+void MepaInterface::ProcInit(std::string rotulo, int nivel_lexico) {
+    geraCodigo_(rotulo, ": ENPR ", nivel_lexico);
+}
+
+void MepaInterface::CallProc(std::string rotulo, int nivel_lexico) {
+    /* callProc rotulo, nivel_lexico  */
+    geraCodigo_("\tCHPR ", rotulo, ", ", nivel_lexico);
+}
+
+void MepaInterface::ProcEnd(int nivel_lexico, int num_params) {
+    geraCodigo_("\tRTPR ", nivel_lexico, ", ", num_params);
+}
 
 /* Mepa.Operacao(Mepa.DIFF) e stack_tipos.push_back(resultado) */
 void MepaInterface::Operacao(const char* operation, VariableType resultado) {

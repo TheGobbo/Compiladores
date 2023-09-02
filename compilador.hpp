@@ -73,6 +73,8 @@ typedef enum simbolos {
 
 extern std::deque<VariableType> stack_tipos;
 extern std::deque<char> stack_rotulos;
+extern std::deque<int> stack_mem;
+
 extern MepaInterface MEPA;
 extern TabelaSimbolos TS;
 extern simbolos simbolo;
@@ -83,7 +85,6 @@ extern int desloc;
 
 extern int num_line;
 extern int num_amem;
-extern int num_vars;
 extern char num_rots;
 
 extern std::string addr_variavel;
@@ -93,9 +94,17 @@ extern bool print; /*helper*/
 /* -------------------------------------------------------------------
  * prototipos globais
  * ------------------------------------------------------------------- */
+void removeForaEscopo();
+
+void declaraVar();
+
+void beginProc();
+void endProc();
+void callProc();
 
 void salvarVariavel();
 void salvarTipos(simbolos simbolo);
+void salvarVarSimples();
 void operaTiposValidos(VariableType resultado);
 void operaTiposValidos();
 
@@ -105,6 +114,8 @@ void popRotulo();
 void popPenultRotulo();
 std::string novoRotulo();
 std::string getRotulo();
+std::string getRotulo(char rotulo);
+char novoRotuloc();
 
 void geraCodigoEndWhile();
 

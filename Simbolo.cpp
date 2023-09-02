@@ -4,27 +4,39 @@
 #include <iostream>
 #include <stack>
 
+#include "compilador.hpp"
+
 // construtor
-Simbolo::Simbolo(char* identificador, Category categoria, int nivel_lexico, int deslocamento)
-    : categoria{categoria}, nivel_lexico{nivel_lexico}, deslocamento{deslocamento} {
+Simbolo::Simbolo(char* identificador, Category categoria, int nivel_lexico, int numero)
+    : categoria{categoria}, nivel_lexico{nivel_lexico}, numero{numero} {
     strncpy(this->identificador, identificador, TAM_TOKEN);
 }
 
 // setters
 void Simbolo::setTipo(VariableType tipo) { this->tipo = tipo; }
 
+void Simbolo::setRotulo(char rotulo) { this->rotulo = rotulo; }
+
 // getters
 char* Simbolo::getIdent() { return this->identificador; }
+
 VariableType Simbolo::getTipo() { return this->tipo; }
+
 Category Simbolo::getCategoria() { return this->categoria; }
+
 int Simbolo::getNivelLexico() { return this->nivel_lexico; }
-int Simbolo::getDeslocamento() { return this->deslocamento; }
+
+int Simbolo::getDeslocamento() { return this->numero; }
+
+int Simbolo::getNumParamFormal() { return this->numero; }
+
+char Simbolo::getRotulo() { return this->rotulo; }
 
 // Simbolo == Simbolo
-bool Simbolo::operator==(Simbolo& other) {
-    // return std::strncmp(this->identificador, other.identificador, TAM_TOKEN) == 0;
-    return this->tipo == other.tipo;
-}
+// bool Simbolo::operator==(Simbolo& other) {
+//     // return std::strncmp(this->identificador, other.identificador, TAM_TOKEN) == 0;
+//     return this->tipo == other.tipo;
+// }
 
 bool Simbolo::valido() {
     // Check if 'tipo' is a valid VariableType
@@ -40,9 +52,9 @@ bool Simbolo::valido() {
         return false;
     }
 
-    // Check if 'nivel_lexico' and 'deslocamento' are non-negative
-    if (this->nivel_lexico < 0 || this->deslocamento < 0) {
-        std::cerr << "'nivel_lexico' e 'deslocamento' devem ser nao-negativos." << std::endl;
+    // Check if 'nivel_lexico' and 'numero' are non-negative
+    if (this->nivel_lexico < 0 || this->numero < 0) {
+        std::cerr << "'nivel_lexico' e 'numero' devem ser nao-negativos." << std::endl;
         return false;
     }
 
@@ -54,12 +66,23 @@ void Simbolo::show() {
     // Map enums to strings
     const char* categoryNames[] = {"VARIAVEL_SIMPLES", "PARAMETRO_FORMAL", "PROCEDURE"};
     const char* variableTypeNames[] = {"INTEIRO", "BOOLEANO", "UNDEFINED"};
+    const char* passageTypeNames[] = {"BY_VALUE", "BY_REFERENCE"};
 
     std::cout << "identificador[" << this->identificador << "] ";
-    std::cout << "tipo[" << variableTypeNames[this->tipo] << "] ";
     std::cout << "categoria[" << categoryNames[this->categoria] << "] ";
     std::cout << "nivel_lexico[" << static_cast<int>(this->nivel_lexico) << "] ";
-    std::cout << "deslocamento[" << static_cast<int>(this->deslocamento) << "]\n";
+    if (this->categoria == VARIAVEL_SIMPLES || this->categoria == PARAMETRO_FORMAL) {
+        std::cout << "numero[" << static_cast<int>(this->numero) << "]\n";
+    } else {
+        std::cout << "Rotulo[" << (int)this->rotulo << "] ";
+        std::cout << "N_Params[" << this->numero << "] ";
+        std::cout << "PARAMS: [";
+        ParamFormal::iterator it;
+        for (it = this->param_formais.begin(); it != this->param_formais.end(); ++it) {
+            std::cout << " (" << passageTypeNames[(*it).first] << ", ";
+        }
+        std::cout << "]\n";
+    }
 }
 
 /*

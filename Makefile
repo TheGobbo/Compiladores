@@ -7,7 +7,7 @@ all: Simbolo.o TabelaSimbolos.o compilador.o MepaInterface.o
 	@g++ -o compilador Scanner.cpp Parser.cpp Simbolo.o TabelaSimbolos.o compilador.o MepaInterface.o
 
 run: all 
-	./compilador < aulas/aula9.pas
+	./compilador < aulas/aula10.pas
 # && cat MEPA
 
 clean:

@@ -25,6 +25,7 @@ numero [0-9]+
 
 comentario "(*".*"*)"
 
+comentario2 "//".*
 
 %%
 
@@ -33,6 +34,8 @@ comentario "(*".*"*)"
 {descarte}
 
 {comentario}
+
+{comentario2}
 
 program {   simbolo  = simb_program;
             strncpy (meu_token, yytext, TAM_TOKEN);

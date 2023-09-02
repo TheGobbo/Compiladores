@@ -18,6 +18,11 @@
 #include <iomanip>
 #include <iostream>
 #include <string>
+/*GAMBI - mudar*/
+#include <cstring>
+
+#define flags(STR) std::cerr << "\033[1;31m" << STR << "\033[0m\n"
+#define flag std::cerr << "\033[1;31mFLAG\033[0m\n"
 
 /* -------------------------------------------------------------------
  *  variáveis globais
@@ -27,15 +32,17 @@ MepaInterface MEPA;
 
 std::deque<VariableType> stack_tipos;
 std::deque<char> stack_rotulos;
+std::deque<int> stack_mem;
+
 TabelaSimbolos TS;
 simbolos simbolo;
 
 char meu_token[TAM_TOKEN];
+char proc_tk[TAM_TOKEN];
 int nivel_lexico = 0;
 
 int num_line = 1;
 int num_amem = 0;
-int num_vars = 0;
 char num_rots = 0;
 
 std::string addr_variavel;
@@ -45,6 +52,53 @@ bool print = false;
 /* -------------------------------------------------------------------
  * funcoes do Compilador
  * ------------------------------------------------------------------- */
+
+void removeForaEscopo() {
+    int num_vars = stack_mem.back();
+
+    /* mudar pra remover procedure sse sai do escopo */
+    TS.RemoveSimbolos(num_vars);
+}
+
+void declaraVar() {
+    Simbolo* var{new Simbolo{meu_token, VARIAVEL_SIMPLES, nivel_lexico,
+                             TS.getNovoDeslocamento(nivel_lexico)}};
+    TS.InsereSimbolo(var);
+    num_amem++;
+}
+
+void beginProc() {
+    MEPA.JumpTo(novoRotulo());
+
+    int numero_params = 0;
+    Simbolo* proc{new Simbolo{meu_token, PROCEDURE, nivel_lexico, numero_params}};
+    proc->setRotulo(novoRotuloc());
+    TS.InsereSimbolo(proc);
+    nivel_lexico++;
+
+    MEPA.ProcInit(getRotulo(), nivel_lexico);
+}
+
+void endProc() {
+    char rotulo = stack_rotulos.back();
+
+    MEPA.ProcEnd(nivel_lexico, 0);
+
+    stack_rotulos.pop_back();
+}
+
+void callProc() {
+    // TODO empilha parametros
+    Simbolo* proc = TS.BuscarSimbolo(proc_tk);
+
+    if (proc == nullptr || proc->getCategoria() != Category::PROCEDURE) {
+        std::cerr << "nao achou " << proc_tk << '\n';
+        return;
+    }
+
+    char rotulo = proc->getRotulo();
+    MEPA.CallProc(getRotulo(rotulo), nivel_lexico);
+}
 
 void salvarTipos(simbolos simbolo) {
     VariableType tipo = simbolo == simb_integer   ? INTEIRO
@@ -56,6 +110,20 @@ void salvarTipos(simbolos simbolo) {
     }
 
     TS.setTipos(tipo);
+}
+
+void salvarVarSimples() {
+    Simbolo* simbolo = TS.BuscarSimbolo(meu_token);
+    if (simbolo == nullptr) error("symbol not found");
+
+    if (simbolo->getCategoria() == Category::VARIAVEL_SIMPLES) {
+        stack_tipos.push_back(simbolo->getTipo());
+        addr_variavel = getAddrLex();
+    }
+
+    if (simbolo->getCategoria() == Category::PROCEDURE) {
+        strncpy(proc_tk, meu_token, TAM_TOKEN);
+    }
 }
 
 void operaTiposValidos() {
@@ -81,7 +149,7 @@ void operaTiposValidos(VariableType resultado) {
 std::string getAddrLex() {
     Simbolo* simbolo = TS.BuscarSimbolo(meu_token);
     if (simbolo == nullptr || !simbolo->valido()) {
-        error("undefined symbol");
+        error("undefined symbol (" + std::string(meu_token) + ")");
     }
 
     std::string nl = std::to_string(simbolo->getNivelLexico());
@@ -113,10 +181,21 @@ std::string novoRotulo() {
     return getRotulo();
 }
 
-std::string getRotulo() {
-    std::ostringstream rotulo;
-    rotulo << "R" << std::setfill('0') << std::setw(3) << (int)stack_rotulos.back();
-    return rotulo.str();
+char novoRotuloc() {
+    if (num_rots >= 255) {
+        error("stack overflow: stack_rotulo");
+    }
+    stack_rotulos.push_back(num_rots);
+    num_rots = num_rots + 1;
+    return num_rots - 1;
+}
+
+std::string getRotulo() { return getRotulo(stack_rotulos.back()); }
+
+std::string getRotulo(char rotulo) {
+    std::ostringstream format;
+    format << "R" << std::setfill('0') << std::setw(3) << (int)rotulo;
+    return format.str();
 }
 
 void popRotulo() {
