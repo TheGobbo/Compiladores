@@ -25,7 +25,9 @@ class TabelaSimbolos {
 
     void InsereSimbolo(Simbolo* simbolo);
     void RemoveSimbolos(int quantidade_simbolos);
+    // void RemoveProcedures(int nivel_lexico);
     Simbolo* BuscarSimbolo(char (&identificador)[TAM_TOKEN]);
+    Simbolo* getTopo();
 
     int getNovoDeslocamento(int nivel_lexico);
     void setTipos(VariableType tipo);

@@ -60,6 +60,28 @@ void TabelaSimbolos::RemoveSimbolos(int quantidade_simbolos) {
     }
     return;
 }
+
+// void TabelaSimbolos::RemoveProcedures(int nivel_lexico) {
+//     int proc_nl;
+//     int nl_proc;
+
+//     std::list<Simbolo*>::iterator it;
+//     for (it = this->tabelaDeSimbolos.begin(); it != this->tabelaDeSimbolos.end();) {
+//         if ((*it)->getCategoria() != Category::PROCEDURE) {
+//             ++it;
+//             continue;
+//         }
+
+//         proc_nl = (*it)->getNivelLexico();
+
+//         if (nivel_lexico <= proc_nl - 2) {
+//             this->tabelaDeSimbolos.erase(it++);
+//         } else {
+//             ++it;
+//         }
+//     }
+// }
+
 Simbolo* TabelaSimbolos::BuscarSimbolo(char (&identificador)[TAM_TOKEN]) {
     Simbolo* simb = nullptr;
     for (auto it = this->tabelaDeSimbolos.rbegin(); it != this->tabelaDeSimbolos.rend(); ++it) {
@@ -70,6 +92,8 @@ Simbolo* TabelaSimbolos::BuscarSimbolo(char (&identificador)[TAM_TOKEN]) {
     }
     return nullptr;
 }
+
+Simbolo* TabelaSimbolos::getTopo() { return this->tabelaDeSimbolos.back(); }
 
 void TabelaSimbolos::show() {
     std::cout << "+ STACK TOP  +\n";

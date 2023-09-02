@@ -30,7 +30,7 @@ void MepaInterface::geraCodigo_(T var1, Types... var2) {
     }
     this->mepa_stream << var1;
 
-    std::cout << var1 << '\n';
+    // std::cout << var1 << '\n';
     // if constexpr (std::is_same_v<T, const char*>) {
     //     if (var1 && *var1 == 'R') this->mepa_stream << ": ";
     // }

@@ -38,7 +38,7 @@ TabelaSimbolos TS;
 simbolos simbolo;
 
 char meu_token[TAM_TOKEN];
-char proc_tk[TAM_TOKEN];
+char proc_tk[TAM_TOKEN]; /* GAMBI */
 int nivel_lexico = 0;
 
 int num_line = 1;
@@ -55,9 +55,20 @@ bool print = false;
 
 void removeForaEscopo() {
     int num_vars = stack_mem.back();
+    TS.RemoveSimbolos(num_vars);
+
+    while (TS.getTopo()->getNivelLexico() - 2 >= nivel_lexico) {
+        std::cout << "TO REMOVE ";
+        TS.getTopo()->show();
+        std::cout << " WITH ROTULO " << getRotulo() << '\n';
+        TS.RemoveSimbolos(1);
+        stack_rotulos.pop_back();
+    }
+
+    flags(std::to_string(nivel_lexico));
+    // TS.RemoveProcedures(nivel_lexico);
 
     /* mudar pra remover procedure sse sai do escopo */
-    TS.RemoveSimbolos(num_vars);
 }
 
 void declaraVar() {
@@ -68,13 +79,14 @@ void declaraVar() {
 }
 
 void beginProc() {
+    int numero_params = 0;
+    nivel_lexico++;
+
     MEPA.JumpTo(novoRotulo());
 
-    int numero_params = 0;
     Simbolo* proc{new Simbolo{meu_token, PROCEDURE, nivel_lexico, numero_params}};
     proc->setRotulo(novoRotuloc());
     TS.InsereSimbolo(proc);
-    nivel_lexico++;
 
     MEPA.ProcInit(getRotulo(), nivel_lexico);
 }
@@ -83,13 +95,14 @@ void endProc() {
     char rotulo = stack_rotulos.back();
 
     MEPA.ProcEnd(nivel_lexico, 0);
+    removeForaEscopo();
 
     stack_rotulos.pop_back();
 }
 
 void callProc() {
     // TODO empilha parametros
-    Simbolo* proc = TS.BuscarSimbolo(proc_tk);
+    Simbolo* proc = TS.BuscarSimbolo(proc_tk); /* GAMBI */
 
     if (proc == nullptr || proc->getCategoria() != Category::PROCEDURE) {
         std::cerr << "nao achou " << proc_tk << '\n';
@@ -122,7 +135,7 @@ void salvarVarSimples() {
     }
 
     if (simbolo->getCategoria() == Category::PROCEDURE) {
-        strncpy(proc_tk, meu_token, TAM_TOKEN);
+        strncpy(proc_tk, meu_token, TAM_TOKEN); /* GAMBI */
     }
 }
 

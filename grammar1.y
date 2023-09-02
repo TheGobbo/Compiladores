@@ -65,6 +65,13 @@ bloco       : parte_declara_vars {
             /* parte_declara_rotulos */
             parte_declara_subrot
             {
+                flags("NL : " + std::to_string(nivel_lexico));
+                std::deque<char>::iterator it;
+                for(it = stack_rotulos.begin(); it != stack_rotulos.end(); ++it){
+                    flags(getRotulo((*it)));
+                }
+                TS.show();
+
                 if(stack_rotulos.size() == 1){
                     MEPA.rotAddrNome(getRotulo(stack_rotulos.back()));
                     stack_rotulos.pop_back();
@@ -123,13 +130,13 @@ lista_idents: lista_idents VIRGULA IDENT
 ;
 
 /* 11. */
-parte_declara_subrot : parte_declara_subrot declara_procedimento PONTO_E_VIRGULA {nivel_lexico--;}
+parte_declara_subrot : parte_declara_subrot declara_procedimento PONTO_E_VIRGULA 
                      /* | parte_declara_subrot declara_funcao PONTO_E_VIRGULA */
                      | %empty
 ;
 
 /* 12. */
-declara_procedimento : PROCEDURE IDENT { beginProc(); } param_formais PONTO_E_VIRGULA bloco { endProc();}
+declara_procedimento : PROCEDURE IDENT { beginProc(); } param_formais PONTO_E_VIRGULA bloco { nivel_lexico--; endProc(); }
 ;
 // 
 // /* 13. */
