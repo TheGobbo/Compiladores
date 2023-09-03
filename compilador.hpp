@@ -16,6 +16,8 @@
 
 #define TAM_TOKEN 16
 
+#include <map>
+
 #include "MepaInterface.hpp"
 #include "TabelaSimbolos.hpp"
 
@@ -91,20 +93,52 @@ extern std::string addr_variavel;
 
 extern bool print; /*helper*/
 
+extern std::map<simbolos, std::pair<const char*, VariableType>> operations;
+
+/* -------------------------------------------------------------------
+ * prototipos globais
+ * ------------------------------------------------------------------- */
+
+void beginCompilador();
+void endCompilador();
+
+void saveSimbolo();
+
+void varsDeclarado();
+void subrotDeclarado();
+void endComandos();
+
+void aplicarTipos();
+void novoSimbolo();  // declaraVar();
+
+void beginProcedure();
+void endProcedure();
+void callProcedure();
+
+void declaraIdentificador();  // salvarVarSimples();
+
+void Read();
+void Write();
+
+void aplicaAtribuicao();
+
+void endCondicional();
+void beginCondicional();
+void elseCondicional();
+
+void beginWhile();
+void endWhile();
+
+void aplicarOperacao(simbolos simbolo);  // token MAIS/DIV/OR/...)
+
+void saveVariavel();
+void loadConstante(std::string valor);
+
 /* -------------------------------------------------------------------
  * prototipos globais
  * ------------------------------------------------------------------- */
 void removeForaEscopo();
 
-void declaraVar();
-
-void beginProc();
-void endProc();
-void callProc();
-
-void salvarVariavel();
-void salvarTipos(simbolos simbolo);
-void salvarVarSimples();
 void operaTiposValidos(VariableType resultado);
 void operaTiposValidos();
 
