@@ -232,6 +232,7 @@ void loadConstante(std::string valor) {
 }  // boolean true & false; else integer
 
 void removeForaEscopo() {
+    return;  // quebra em aula9.pas
     int num_vars = stack_mem.back();
     TS.RemoveSimbolos(num_vars);
 

@@ -2,8 +2,8 @@
 	@g++ -c $< -o $@
 
 all: Simbolo.o TabelaSimbolos.o compilador.o MepaInterface.o
-	@flex lexer1.l
-	@bison grammar1.y 
+	@flex lexer.l
+	@bison grammar.y 
 	@g++ -o compilador Scanner.cpp Parser.cpp Simbolo.o TabelaSimbolos.o compilador.o MepaInterface.o
 
 run: all 
