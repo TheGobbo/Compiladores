@@ -77,7 +77,9 @@ void beginCompilador() {
     operations[simb_menos] = std::pair{MEPA.SUBT, VariableType::INTEIRO};
 }
 void endCompilador() {
+    flags("endCompilador");
     MEPA.Finish();
+    TS.clear();
     TS.show();
 }
 
@@ -92,7 +94,7 @@ void subrotDeclarado() {
     flags("NL : " + std::to_string(nivel_lexico));
     std::deque<char>::iterator it;
     for (it = stack_rotulos.begin(); it != stack_rotulos.end(); ++it) {
-        flags(getRotulo((*it)));
+        flags("subrot: " + getRotulo((*it)));
     }
     TS.show();
 
@@ -127,25 +129,32 @@ void novoSimbolo() {
 
 /* DECLARA_PROCEDIMENTO */
 void beginProcedure() {
+    flags("beginProcedure");
     int numero_params = 0;
     nivel_lexico++;
 
+    // char novorot = novoRotuloc();
+    // MEPA.JumpTo(getRotulo(novorot));
     MEPA.JumpTo(novoRotulo());
 
     Simbolo* proc{new Simbolo{meu_token, PROCEDURE, nivel_lexico, numero_params}};
+    // proc->setRotulo(novorot);
     proc->setRotulo(novoRotuloc());
     TS.InsereSimbolo(proc);
 
     MEPA.ProcInit(getRotulo(), nivel_lexico);
 }
 void endProcedure() {
-    nivel_lexico--;
+    if (stack_rotulos.empty()) {
+        flags("GOTTEM");
+    }
     char rotulo = stack_rotulos.back();
 
     MEPA.ProcEnd(nivel_lexico, 0);
-    removeForaEscopo();
+    // removeForaEscopo();//  REMOVE NO FINAL DO COMANDO
 
     stack_rotulos.pop_back();
+    nivel_lexico--;
 }
 void callProcedure() {
     // TODO empilha parametros
@@ -232,14 +241,15 @@ void loadConstante(std::string valor) {
 }  // boolean true & false; else integer
 
 void removeForaEscopo() {
-    return;  // quebra em aula9.pas
     int num_vars = stack_mem.back();
     TS.RemoveSimbolos(num_vars);
 
-    while (TS.getTopo()->getNivelLexico() - 2 >= nivel_lexico) {
-        std::cout << "TO REMOVE ";
+    while (!TS.empty() && TS.getTopo()->getNivelLexico() - 1 >= nivel_lexico) {
+        std::cerr << "TO REMOVE ";
         TS.getTopo()->show();
-        std::cout << " WITH ROTULO " << getRotulo() << '\n';
+        // std::cerr << " WITH ROTULO " << getRotulo() << '\n';
+        std::cerr << "ROTULO SIZE: " << stack_rotulos.size() << "\n";
+        TS.show();
         TS.RemoveSimbolos(1);
         stack_rotulos.pop_back();
     }
@@ -293,7 +303,7 @@ void popPenultRotulo() {
     }
 
     std::ostringstream rotulo;
-    rotulo << "R" << std::setfill('0') << std::setw(3) << (int)stack_rotulos.at(rot_size - 2);
+    rotulo << "R" << std::setfill('0') << std::setw(2) << (int)stack_rotulos.at(rot_size - 2);
     // geraCodigo_(MEPA::ROTULO(rotulo.str()));
     MEPA.rotAddrNome(rotulo.str(), "NADA");
 
@@ -322,7 +332,7 @@ std::string getRotulo() { return getRotulo(stack_rotulos.back()); }
 
 std::string getRotulo(char rotulo) {
     std::ostringstream format;
-    format << "R" << std::setfill('0') << std::setw(3) << (int)rotulo;
+    format << "R" << std::setfill('0') << std::setw(2) << (int)rotulo;
     return format.str();
 }
 

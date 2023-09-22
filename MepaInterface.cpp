@@ -92,7 +92,7 @@ void MepaInterface::ProcInit(std::string rotulo, int nivel_lexico) {
 
 void MepaInterface::CallProc(std::string rotulo, int nivel_lexico) {
     /* callProc rotulo, nivel_lexico  */
-    geraCodigo_("\tCHPR ", rotulo, ", ", nivel_lexico);
+    geraCodigo_("\tCHPR ", rotulo);  // , ", ", nivel_lexico); GAMBI?
 }
 
 void MepaInterface::ProcEnd(int nivel_lexico, int num_params) {

@@ -83,7 +83,6 @@ extern simbolos simbolo;
 
 extern char meu_token[TAM_TOKEN];
 extern int nivel_lexico;
-extern int desloc;
 
 extern int num_line;
 extern int num_amem;

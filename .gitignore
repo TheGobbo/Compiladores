@@ -5,8 +5,6 @@
 *.output
 Scanner*
 Parser*
-
-aula*
 MEPA
 lex.yy.c 
 compilador

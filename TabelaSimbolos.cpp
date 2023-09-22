@@ -15,7 +15,10 @@ int TabelaSimbolos::getNovoDeslocamento(int nivel_lexico) {
     }
 
     Simbolo* topo = (Simbolo*)this->tabelaDeSimbolos.back();
-    return topo->getNivelLexico() == nivel_lexico ? topo->getDeslocamento() + 1 : 0;
+    // inicia com zero se for novo nivel lexico ou se o topo eh procedure
+    return (topo->getNivelLexico() == nivel_lexico && topo->getCategoria() != Category::PROCEDURE)
+               ? topo->getDeslocamento() + 1
+               : 0;
 }
 
 void TabelaSimbolos::setTipos(VariableType tipo) {
@@ -52,7 +55,7 @@ void TabelaSimbolos::InsereSimbolo(Simbolo* simbolo) {
 
 void TabelaSimbolos::RemoveSimbolos(int quantidade_simbolos) {
     while (quantidade_simbolos > 0 && !this->tabelaDeSimbolos.empty()) {
-        std::cout << "Removendo : ";
+        std::cerr << "Removendo : ";
         ((Simbolo*)this->tabelaDeSimbolos.back())->show();
         this->tabelaDeSimbolos.pop_back();
         this->quantidade_simbolos--;
@@ -104,6 +107,9 @@ void TabelaSimbolos::show() {
     std::cout << "+ STACK DOWN +\n";
 }
 
+bool TabelaSimbolos::empty() { return this->tabelaDeSimbolos.empty(); }
+
+void TabelaSimbolos::clear() { this->RemoveSimbolos(this->quantidade_simbolos); }
 /*
 // testes da classe
 int main() {

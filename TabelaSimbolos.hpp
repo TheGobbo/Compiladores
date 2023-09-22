@@ -29,6 +29,9 @@ class TabelaSimbolos {
     Simbolo* BuscarSimbolo(char (&identificador)[TAM_TOKEN]);
     Simbolo* getTopo();
 
+    bool empty();
+    void clear();
+
     int getNovoDeslocamento(int nivel_lexico);
     void setTipos(VariableType tipo);
 
