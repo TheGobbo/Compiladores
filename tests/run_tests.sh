@@ -7,6 +7,8 @@ make clean && make
 input_folder="tests/input"
 output_folder="tests/expected_output"
 
+output="output/output.mepa"
+
 # Define ANSI color escape codes
 GREEN='\033[0;32m'
 RED='\033[0;31m'
@@ -21,7 +23,7 @@ for input_file in $input_folder/aula*.pas; do
     ./compilador < "$input_file" > /dev/null 2>&1
     
     # Use 'diff' to compare the output with the expected output, ignoring white spaces and new lines
-    if diff -wB MEPA "$output_file" ; then
+    if diff -wB $output "$output_file" ; then
         echo -e "${GREEN}$(basename "$input_file") passed${NC}"
     else
         echo -e "${RED}$(basename "$input_file") failed${NC}"

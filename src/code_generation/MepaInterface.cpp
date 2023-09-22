@@ -4,7 +4,7 @@
 #include <iomanip>
 #include <iostream>
 
-#include "src/compilador.hpp"
+#include "compilador.hpp"
 
 /* -------------------------------------------------------------------
  * MEPA STREAM

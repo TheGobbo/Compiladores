@@ -5,7 +5,7 @@
 #include <fstream>
 #include <string>
 
-#include "Simbolo.hpp"
+#include "code_generation/Simbolo.hpp"
 
 class MepaInterface {
    public:

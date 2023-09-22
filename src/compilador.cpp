@@ -29,7 +29,7 @@
  *  variáveis globais
  * ------------------------------------------------------------------- */
 
-MepaInterface MEPA;
+MepaInterface MEPA("output/output.mepa");
 
 std::deque<VariableType> stack_tipos;
 std::deque<char> stack_rotulos;

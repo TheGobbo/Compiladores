@@ -1,10 +1,10 @@
-#include "include/code_generation/Simbolo.hpp"
+#include "code_generation/Simbolo.hpp"
 
 #include <cstring>
 #include <iostream>
 #include <stack>
 
-#include "src/compilador.hpp"
+#include "compilador.hpp"
 
 // construtor
 Simbolo::Simbolo(char* identificador, Category categoria, int nivel_lexico, int numero)

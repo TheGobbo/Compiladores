@@ -16,7 +16,7 @@ Time Complexity : O(1)
 
 #define MAX_STACK_SIZE 100
 
-#include "Simbolo.hpp"
+#include "code_generation/Simbolo.hpp"
 
 class TabelaSimbolos {
    public:
