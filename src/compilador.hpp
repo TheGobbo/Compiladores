@@ -18,8 +18,8 @@
 
 #include <map>
 
-#include "MepaInterface.hpp"
-#include "TabelaSimbolos.hpp"
+#include "code_generation/MepaInterface.hpp"
+#include "code_generation/TabelaSimbolos.hpp"
 
 typedef enum simbolos {
     simb_program,

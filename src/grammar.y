@@ -5,7 +5,7 @@
 #include <string>
 #include <cmath>
 #include "Scanner.hpp"
-#include "compilador.hpp"
+#include "src/compilador.hpp"
 
 #define flags(STR) std::cerr << "\033[1;31m" << STR << "\033[0m\n"
 #define flag std::cerr << "\033[1;31mFLAG\033[0m\n"

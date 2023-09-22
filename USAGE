@@ -23,3 +23,39 @@ mais restritas do que esta, porém que segue o mesmo "esquema".
 > sudo apt-get install flex bison libfl-dev libbison-dev
 
 Utilizar a flag `-lfl` no lugar de `-ll`
+
+```
+compiladores/
+│
+├── src/
+│   ├── main.cpp                # Main entry point
+│   ├── code_generation/
+│   │   ├── Simbolo.cpp         # Source files for code generation
+│   │   ├── TabelaSimbolos.cpp  # Source files continued...
+│   │   ├── compilador.cpp      # Source files continued...
+│   │   └── MepaInterface.cpp   # Source files continued...
+│   └── lexer.l                 # Flex lexer specification
+│   └── grammar.y               # Bison grammar specification
+│
+├── include/
+│   ├── code_generation/
+│   │   ├── Simbolo.hpp         # Header files for code generation
+│   │   ├── TabelaSimbolos.hpp  # Header files continued...
+│   │   ├── compilador.hpp      # Header files continued...
+│   │   └── MepaInterface.hpp   # Header files continued...
+│
+├── tests/
+│   ├── input/                  # Test input files
+│   │   └── aulaX.pas          
+│   ├── expected_output/        # Correct output files
+|   |   └── aulaX.mepa          
+│   └── run_tests.sh            # Test script
+│
+├── output/
+│   └── output.mepa             # Output MEPA file
+│
+├── Makefile                    # Your Makefile
+├── USAGE                       # Project documentation
+└── .gitignore                  # Git ignore file (if using Git)
+
+```

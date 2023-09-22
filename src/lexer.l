@@ -3,7 +3,7 @@
 #include <cstdlib>
 #include <iomanip>
 #include "Parser.hpp"
-#include "compilador.hpp"
+#include "src/compilador.hpp"
 
 using namespace bison;
 

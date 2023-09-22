@@ -1,11 +1,10 @@
-
-#include "MepaInterface.hpp"
+#include "code_generation/MepaInterface.hpp"
 
 #include <fstream>
 #include <iomanip>
 #include <iostream>
 
-#include "compilador.hpp"
+#include "src/compilador.hpp"
 
 /* -------------------------------------------------------------------
  * MEPA STREAM

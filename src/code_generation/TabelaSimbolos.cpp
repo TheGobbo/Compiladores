@@ -1,9 +1,9 @@
-#include "TabelaSimbolos.hpp"
+#include "include/code_generation/TabelaSimbolos.hpp"
 
 #include <cstring>
 #include <iostream>
 
-#include "Simbolo.hpp"
+#include "include/code_generation/Simbolo.hpp"
 
 TabelaSimbolos::TabelaSimbolos() {}
 
