@@ -1,11 +1,12 @@
 .*
 *.o 
-*.gch
-*.tab.* 
 *.output
+
+!tests/input/*.pas
 output/*.mepa
 Scanner*
 Parser*
-MEPA
-lex.yy.c 
 compilador
+
+# compiler design pattern (TODO)
+CodeGenerationContext*

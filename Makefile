@@ -31,8 +31,12 @@ test: all
 
 # Clean object files and generated files
 clean:
-	rm -f *.o Parser* Scanner*
-	find tests/input/ -type f ! -name "*.pas" -exec rm -f {} \;
+# remove .o from src
+	@find src/ -type f ! -regex ".*\.\(cpp\|y\|l\|hpp\)" -exec rm -f {} \; 
+# remove compiled pascal from tests/
+	@find tests/input/ -type f ! -name "*.pas" -exec rm -f {} \;
+# remove lexer and bison result files
+	@rm -f Parser* Scanner*
 
 # Clean all generated files, including the compiled program
 clear: clean

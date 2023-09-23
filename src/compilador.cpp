@@ -179,7 +179,6 @@ void novoSimbolo() {
 
 /* DECLARA_PROCEDIMENTO */
 void beginProcedure() {
-    flags("beginProcedure");
     int numero_params = 0;
     nivel_lexico++;
 
@@ -223,7 +222,6 @@ void declaraIdentificador() {
     if (simbolo == nullptr) error("symbol not found");
 
     if (simbolo->getCategoria() == Category::VARIAVEL_SIMPLES) {
-        flags(simbolo->getTipo());
         stack_tipos.push_back(simbolo->getTipo());
         addr_variavel = getAddrLex();
     }
@@ -280,7 +278,6 @@ void endWhile() {
 void aplicarOperacao(const std::string& command, VariableType resultado) {
     //                    CodeGenerationContext& context) {
     MEPA.write_code(command);
-    flags(command);
 
     stack_tipos.pop_back();
     stack_tipos.pop_back();

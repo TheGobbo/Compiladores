@@ -28,7 +28,8 @@ void MepaInterface::write_code(const std::string& command) {
 void MepaInterface::write_rotulo(char rotulo, const std::string& nome) {
     std::ostringstream format;
     format << "R" << std::setfill('0') << std::setw(2) << (int)rotulo;
-    this->write_code(format.str() + ": " + nome);
+    this->mepa_stream << format.str() + ": " + nome << '\n';
+    this->mepa_stream.flush();
 }
 
 /* -------------------------------------------------------------------
