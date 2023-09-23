@@ -6,8 +6,8 @@ SRCS := $(wildcard src/code_generation/*.cpp)  src/compilador.cpp
 # Object files (wildcard pattern)
 OBJS := $(SRCS:.cpp=.o)
 
-# Compiler
-CXX := g++
+# Compiler (use c++14 or higher)
+CXX := g++ --std=c++14
 
 # Compiler flags
 CXXFLAGS :=  -I./include -I./src
