@@ -24,6 +24,77 @@
 
 #define flags(STR) std::cerr << RED << STR << NC
 #define print(STR) std::cerr << GREEN << STR << NC
+
+/* -------------------------------------------------------------------
+ * Classe de rotulos
+ * ------------------------------------------------------------------- */
+
+Rotulos::Rotulos() : rotulo(0) {}
+
+/* cria um novo rotulo e adiciona na stack */
+Rotulos& Rotulos::push() {
+    if (this->rotulo >= 255) {
+        error("Stack rotulos overflow");
+    }
+    this->stack_rotulos.push_back(this->rotulo);
+    this->rotulo++;
+    return *this;
+}
+
+/* adiciona o rotulo r na stack */
+Rotulos& Rotulos::push(char r) {
+    if (this->rotulo >= 255) {
+        error("Stack rotulos overflow");
+    }
+    this->stack_rotulos.push_back(r);
+    return *this;
+}
+
+/* remove o topo da stack */
+Rotulos& Rotulos::pop() {
+    if (this->stack_rotulos.empty()) {
+        error("Stack rotulos is empty.");
+    }
+    this->stack_rotulos.pop_back();
+    return *this;
+}
+
+/* retorna o topo da stack */
+char Rotulos::top() const {
+    if (this->stack_rotulos.empty()) {
+        error("Stack rotulos is empty.");
+    }
+    return this->stack_rotulos.back();
+}
+
+/* transforma topo da stack em -> R003 */
+std::string Rotulos::transformTop() const {
+    if (this->stack_rotulos.empty()) {
+        error("Stack rotulos is empty.");
+    }
+    char topChar = this->stack_rotulos.back();
+    return this->transform(topChar);
+}
+
+/* transforma char rotulo em -> R003 */
+std::string Rotulos::transform(char rotulo) const {
+    std::ostringstream format;
+    format << "R" << std::setw(2) << std::setfill('0') << (int)rotulo;
+    return format.str();
+}
+
+/* retona o tamanho da stack */
+int Rotulos::size() { return this->stack_rotulos.size(); }
+
+/* imprime a stack na tela */
+void Rotulos::show() {
+    flags("Nivel Lex : " + itoa(nivel_lexico));
+    std::deque<char>::iterator it;
+    for (it = this->stack_rotulos.begin(); it != this->stack_rotulos.end(); ++it) {
+        flags("stack rotulos: R" + (int)(*it));
+    }
+}
+
 /* -------------------------------------------------------------------
  *  variáveis globais
  * ------------------------------------------------------------------- */
@@ -31,8 +102,8 @@
 MepaInterface MEPA("output/output.mepa");
 
 std::deque<VariableType> stack_tipos;
-std::deque<char> stack_rotulos;
 std::deque<int> stack_mem;
+Rotulos stack_rotulos;
 
 TabelaSimbolos TS;
 simbolos simbolo;
@@ -73,16 +144,11 @@ void varsDeclarado() {
     print = true;
 }
 void subrotDeclarado() {
-    flags("NL : " + itoa(nivel_lexico));
-    std::deque<char>::iterator it;
-    for (it = stack_rotulos.begin(); it != stack_rotulos.end(); ++it) {
-        flags("subrot: " + getRotulo((*it)));
-    }
     TS.show();
 
     if (stack_rotulos.size() == 1) {
-        MEPA.write_rotulo(stack_rotulos.back(), "NADA");
-        stack_rotulos.pop_back();
+        MEPA.write_rotulo(stack_rotulos.top(), "NADA");
+        stack_rotulos.pop();
     }
 }
 void endComandos() {
@@ -103,9 +169,6 @@ void aplicarTipos() {
     TS.setTipos(tipo);
 }
 void novoSimbolo() {
-    // Simbolo* var{new Simbolo{meu_token, VARIAVEL_SIMPLES, nivel_lexico,
-    //                          TS.getNovoDeslocamento(nivel_lexico)}};
-
     Simbolo* var{new Simbolo{meu_token, VARIAVEL_SIMPLES, nivel_lexico}};
     var->setDeslocamento(TS.getNovoDeslocamento(nivel_lexico));
     var->setTipo(UNDEFINED);
@@ -120,31 +183,25 @@ void beginProcedure() {
     int numero_params = 0;
     nivel_lexico++;
 
-    MEPA.write_code("DSVS " + novoRotulo());
+    MEPA.write_code("DSVS " + stack_rotulos.push().transformTop());
 
     Simbolo* proc{new Simbolo{meu_token, PROCEDURE, nivel_lexico}};
     proc->setNumParams(numero_params);
-    proc->setRotulo(novoRotuloc());
+    proc->setRotulo(stack_rotulos.push().top());
 
     TS.InsereSimbolo(proc);
 
-    MEPA.write_rotulo(stack_rotulos.back(), "ENPR " + itoa(nivel_lexico));
+    MEPA.write_rotulo(stack_rotulos.top(), "ENPR " + itoa(nivel_lexico));
 }
 void endProcedure() {
-    if (stack_rotulos.empty()) {
-        flags("GOTTEM");
-    }
-    char rotulo = stack_rotulos.back();
-
-    // MEPA.ProcEnd(nivel_lexico, 0);
     MEPA.write_code("RTPR " + itoa(nivel_lexico, 0));
-    // removeForaEscopo();//  REMOVE NO FINAL DO COMANDO
 
-    stack_rotulos.pop_back();
+    stack_rotulos.pop();
     nivel_lexico--;
 }
 void callProcedure() {
     // TODO empilha parametros
+
     Simbolo* proc = TS.BuscarSimbolo(proc_tk); /* GAMBI */
 
     if (proc == nullptr || proc->getCategoria() != Category::PROCEDURE) {
@@ -153,14 +210,12 @@ void callProcedure() {
     }
 
     char rotulo = proc->getRotulo();
-    // MEPA.CallProc(getRotulo(rotulo), nivel_lexico);
-    MEPA.write_code("CHPR " + getRotulo(rotulo));
+    MEPA.write_code("CHPR " + stack_rotulos.transform(rotulo));
 }
 
 /* ATRIBUICAO */
 void aplicaAtribuicao() {
     operaTiposValidos();
-    // MEPA.Atribuicao();
     MEPA.write_code("ARMZ " + addr_variavel);
 }
 void declaraIdentificador() {
@@ -176,7 +231,7 @@ void declaraIdentificador() {
     if (simbolo->getCategoria() == Category::PROCEDURE) {
         proc_tk = meu_token; /* GAMBI */
     }
-}  // salvarVarSimples
+}
 
 /* READ & WRITE */
 void Read() {
@@ -186,28 +241,35 @@ void Read() {
 void Write() { MEPA.write_code("IMPR"); }
 
 /* IF_THEN_ELSE */
-void endCondicional() { popRotulo(); }
-void beginCondicional() {  // mesmo que bodyWhile analisaExpression
-    // MEPA.IfJumpTo(novoRotulo());
-    MEPA.write_code("DSVF " + novoRotulo());
+void endCondicional() {
+    MEPA.write_rotulo(stack_rotulos.top(), "NADA");
+    stack_rotulos.pop();
 }
+void beginCondicional() { MEPA.write_code("DSVF " + stack_rotulos.push().transformTop()); }
+
 void elseCondicional() {
-    // MEPA.JumpTo(novoRotulo());
-    MEPA.write_code("DSVS " + novoRotulo());
-    popPenultRotulo();
+    MEPA.write_code("DSVS " + stack_rotulos.push().transformTop());
+    std::size_t rot_size = stack_rotulos.size();
+
+    char topo = stack_rotulos.top();
+    stack_rotulos.pop();
+
+    char subtop = stack_rotulos.top();
+    stack_rotulos.pop();
+    stack_rotulos.push(topo);
+
+    MEPA.write_rotulo(subtop, "NADA");
 }
 
 /* WHILE */
-void beginWhile() {
-    // MEPA.rotAddrNome(novoRotulo());
-    MEPA.write_rotulo(novoRotuloc(), "NADA");
-}
-void endWhile() {
-    char end = stack_rotulos.back();
-    stack_rotulos.pop_back();
+void beginWhile() { MEPA.write_rotulo(stack_rotulos.push().top(), "NADA"); }
 
-    std::string begin = getRotulo();
-    stack_rotulos.pop_back();
+void endWhile() {
+    char end = stack_rotulos.top();
+    stack_rotulos.pop();
+
+    std::string begin = stack_rotulos.transformTop();
+    stack_rotulos.pop();
 
     MEPA.write_code("DSVS " + begin);
     MEPA.write_rotulo(end, "NADA");
@@ -235,9 +297,11 @@ void saveVariavel() {
     if (simbolo->getCategoria() == Category::VARIAVEL_SIMPLES) {
         stack_tipos.push_back(simbolo->getTipo());
     }
-    // MEPA.LoadFrom(getAddrLex());
+
     MEPA.write_code("CRVL " + getAddrLex());
 }
+
+// boolean true & false; senao eh integer
 void loadConstante(std::string valor) {
     if (valor == "true" || valor == "false") {
         stack_tipos.push_back(VariableType::BOOLEANO);
@@ -246,8 +310,7 @@ void loadConstante(std::string valor) {
         MEPA.write_code("CRCT " + valor);
         stack_tipos.push_back(VariableType::INTEIRO);
     }
-
-}  // boolean true & false; else integer
+}
 
 void removeForaEscopo() {
     int num_vars = stack_mem.back();
@@ -257,16 +320,11 @@ void removeForaEscopo() {
         std::cerr << "TO REMOVE ";
         TS.getTopo()->show();
         // std::cerr << " WITH ROTULO " << getRotulo() << '\n';
-        std::cerr << "ROTULO SIZE: " << stack_rotulos.size() << "\n";
+        // std::cerr << "ROTULO SIZE: " << stack_rotulos.size() << "\n";
         TS.show();
         TS.RemoveSimbolos(1);
-        stack_rotulos.pop_back();
+        stack_rotulos.pop();
     }
-
-    flags(itoa(nivel_lexico));
-    // TS.RemoveProcedures(nivel_lexico);
-
-    /* mudar pra remover procedure sse sai do escopo */
 }
 
 /* -------------------------------------------------------------------
@@ -300,58 +358,6 @@ std::string getAddrLex() {
     }
 
     return itoa(simbolo->getNivelLexico(), simbolo->getDeslocamento());
-}
-
-void popPenultRotulo() {
-    std::size_t rot_size = stack_rotulos.size();
-    if (rot_size < 2) {
-        error("stack underflow on rotulos");
-    }
-
-    char topo = stack_rotulos.back();
-    stack_rotulos.pop_back();
-
-    char subtop = stack_rotulos.back();
-    stack_rotulos.pop_back();
-    stack_rotulos.push_back(topo);
-
-    MEPA.write_rotulo(subtop, "NADA");
-}
-
-std::string novoRotulo() {
-    if (num_rots >= 255) {
-        error("stack overflow: stack_rotulo");
-    }
-    stack_rotulos.push_back(num_rots);
-    num_rots = num_rots + 1;
-    return getRotulo();
-}
-
-char novoRotuloc() {
-    if (num_rots >= 255) {
-        error("stack overflow: stack_rotulo");
-    }
-    stack_rotulos.push_back(num_rots);
-    num_rots = num_rots + 1;
-    return num_rots - 1;
-}
-
-std::string getRotulo() { return getRotulo(stack_rotulos.back()); }
-
-std::string getRotulo(char rotulo) {
-    std::ostringstream format;
-    format << "R" << std::setfill('0') << std::setw(2) << (int)rotulo;
-    return format.str();
-}
-
-void popRotulo() {
-    std::size_t rot_size = stack_rotulos.size();
-    if (rot_size < 1) {
-        error("stack underflow on rotulos");
-    }
-
-    MEPA.write_rotulo(stack_rotulos.back(), "NADA");
-    stack_rotulos.pop_back();
 }
 
 // espelho de bison::Parse::error

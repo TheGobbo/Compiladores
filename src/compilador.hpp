@@ -67,13 +67,31 @@ typedef enum simbolos {
     simb_identificador,
 } simbolos;
 
+class Rotulos {
+   public:
+    Rotulos();
+
+    Rotulos& push();
+    Rotulos& push(char r);
+    Rotulos& pop();
+    char top() const;
+    std::string transformTop() const;
+    std::string transform(char rotulo) const;
+    void show();
+    int size();
+
+   private:
+    std::deque<char> stack_rotulos;
+    char rotulo;
+};
+
 /* -------------------------------------------------------------------
  * variáveis globais
  * ------------------------------------------------------------------- */
 
 extern std::deque<VariableType> stack_tipos;
-extern std::deque<char> stack_rotulos;
 extern std::deque<int> stack_mem;
+extern Rotulos stack_rotulos;
 
 extern MepaInterface MEPA;
 extern TabelaSimbolos TS;
@@ -137,18 +155,9 @@ void removeForaEscopo();
 void operaTiposValidos(VariableType resultado);
 void operaTiposValidos();
 
+/* utils */
 std::string getAddrLex();
 
-void popRotulo();
-void popPenultRotulo();
-std::string novoRotulo();
-std::string getRotulo();
-std::string getRotulo(char rotulo);
-char novoRotuloc();
-
-void geraCodigoEndWhile();
-
-/* utils */
 void print_tipos();
 void error(const std::string& msg);
 const std::string& itoa(int arg1);
