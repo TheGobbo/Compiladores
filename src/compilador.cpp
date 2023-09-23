@@ -2,9 +2,9 @@
 /* -------------------------------------------------------------------
  *            Aquivo: compilador.c
  * -------------------------------------------------------------------
- *              Autor: Bruno Muller Junior
- *               Data: 08/2007
- *      Atualizado em: [09/08/2020, 19h:01m]
+ *              Autor: Eduardo Gobbo Willi Vasconcellos Goncalves
+ *               Data: 08/2023
+ *      Atualizado em: [22/09/2020]
  *
  * -------------------------------------------------------------------
  *
@@ -14,17 +14,16 @@
 
 #include "compilador.hpp"
 
-#include <cstdlib>
 #include <iomanip>
 #include <iostream>
-#include <map>  // operacao
 #include <string>
-/*GAMBI - mudar*/
-#include <cstring>
 
-#define flags(STR) std::cerr << "\033[1;31m" << STR << "\033[0m\n"
-#define flag std::cerr << "\033[1;31mFLAG\033[0m\n"
+#define GREEN "\033[1;32m"
+#define RED "\033[1;31m"
+#define NC "\033[0m"  // No color
 
+#define flags(STR) std::cerr << RED << STR << NC
+#define print(STR) std::cerr << GREEN << STR << NC
 /* -------------------------------------------------------------------
  *  variáveis globais
  * ------------------------------------------------------------------- */
@@ -50,35 +49,18 @@ std::string addr_variavel;
 
 bool print = false;
 
-std::map<simbolos, std::pair<const char*, VariableType>> operations;
-
 /* -------------------------------------------------------------------
  * funcoes do Compilador
  * ------------------------------------------------------------------- */
+
 // auxiliar //
 void saveCurrentSimbolo() {}
 
 /* PROGRAM */
-void beginCompilador() {
-    MEPA.Start();
-
-    operations[simb_or] = std::pair{MEPA.OR, BOOLEANO};
-    operations[simb_and] = std::pair{MEPA.AND, VariableType::BOOLEANO};
-    operations[simb_maior] = std::pair{MEPA.MAIOR, VariableType::BOOLEANO};
-    operations[simb_menor] = std::pair{MEPA.MENOR, VariableType::BOOLEANO};
-    operations[simb_diferenca] = std::pair{MEPA.DIFF, VariableType::BOOLEANO};
-    operations[simb_igualdade] = std::pair{MEPA.IGUAL, VariableType::BOOLEANO};
-    operations[simb_maior_igual] = std::pair{MEPA.MAIOR_IGUAL, VariableType::BOOLEANO};
-    operations[simb_menor_igual] = std::pair{MEPA.MENOR_IGUAL, VariableType::BOOLEANO};
-
-    operations[simb_div] = std::pair{MEPA.DIV, VariableType::INTEIRO};
-    operations[simb_mult] = std::pair{MEPA.MULT, VariableType::INTEIRO};
-    operations[simb_mais] = std::pair{MEPA.SOMA, VariableType::INTEIRO};
-    operations[simb_menos] = std::pair{MEPA.SUBT, VariableType::INTEIRO};
-}
+void beginCompilador() { MEPA.write_code("INPP"); }
 void endCompilador() {
-    flags("endCompilador");
-    MEPA.Finish();
+    print("endCompilador");
+    MEPA.write_code("PARA");
     TS.clear();
     TS.show();
 }
@@ -91,7 +73,7 @@ void varsDeclarado() {
     print = true;
 }
 void subrotDeclarado() {
-    flags("NL : " + std::to_string(nivel_lexico));
+    flags("NL : " + itoa(nivel_lexico));
     std::deque<char>::iterator it;
     for (it = stack_rotulos.begin(); it != stack_rotulos.end(); ++it) {
         flags("subrot: " + getRotulo((*it)));
@@ -99,7 +81,7 @@ void subrotDeclarado() {
     TS.show();
 
     if (stack_rotulos.size() == 1) {
-        MEPA.rotAddrNome(getRotulo(stack_rotulos.back()));
+        MEPA.write_rotulo(stack_rotulos.back(), "NADA");
         stack_rotulos.pop_back();
     }
 }
@@ -138,18 +120,15 @@ void beginProcedure() {
     int numero_params = 0;
     nivel_lexico++;
 
-    // char novorot = novoRotuloc();
-    // MEPA.JumpTo(getRotulo(novorot));
-    MEPA.JumpTo(novoRotulo());
+    MEPA.write_code("DSVS " + novoRotulo());
 
-    // Simbolo* proc{new Simbolo{meu_token, PROCEDURE, nivel_lexico, numero_params}};
     Simbolo* proc{new Simbolo{meu_token, PROCEDURE, nivel_lexico}};
     proc->setNumParams(numero_params);
     proc->setRotulo(novoRotuloc());
-    // proc->setRotulo(novorot);
+
     TS.InsereSimbolo(proc);
 
-    MEPA.ProcInit(getRotulo(), nivel_lexico);
+    MEPA.write_rotulo(stack_rotulos.back(), "ENPR " + itoa(nivel_lexico));
 }
 void endProcedure() {
     if (stack_rotulos.empty()) {
@@ -157,7 +136,8 @@ void endProcedure() {
     }
     char rotulo = stack_rotulos.back();
 
-    MEPA.ProcEnd(nivel_lexico, 0);
+    // MEPA.ProcEnd(nivel_lexico, 0);
+    MEPA.write_code("RTPR " + itoa(nivel_lexico, 0));
     // removeForaEscopo();//  REMOVE NO FINAL DO COMANDO
 
     stack_rotulos.pop_back();
@@ -173,11 +153,16 @@ void callProcedure() {
     }
 
     char rotulo = proc->getRotulo();
-    MEPA.CallProc(getRotulo(rotulo), nivel_lexico);
+    // MEPA.CallProc(getRotulo(rotulo), nivel_lexico);
+    MEPA.write_code("CHPR " + getRotulo(rotulo));
 }
 
 /* ATRIBUICAO */
-void aplicaAtribuicao() { MEPA.Atribuicao(); }
+void aplicaAtribuicao() {
+    operaTiposValidos();
+    // MEPA.Atribuicao();
+    MEPA.write_code("ARMZ " + addr_variavel);
+}
 void declaraIdentificador() {
     Simbolo* simbolo = TS.BuscarSimbolo(meu_token);
     if (simbolo == nullptr) error("symbol not found");
@@ -194,39 +179,54 @@ void declaraIdentificador() {
 }  // salvarVarSimples
 
 /* READ & WRITE */
-void Read() { MEPA.Read(); }
-void Write() { MEPA.Write(); }
+void Read() {
+    MEPA.write_code("LEIT");
+    MEPA.write_code("ARMZ " + getAddrLex());
+}
+void Write() { MEPA.write_code("IMPR"); }
 
 /* IF_THEN_ELSE */
 void endCondicional() { popRotulo(); }
 void beginCondicional() {  // mesmo que bodyWhile analisaExpression
-    MEPA.IfJumpTo(novoRotulo());
+    // MEPA.IfJumpTo(novoRotulo());
+    MEPA.write_code("DSVF " + novoRotulo());
 }
 void elseCondicional() {
-    MEPA.JumpTo(novoRotulo());
+    // MEPA.JumpTo(novoRotulo());
+    MEPA.write_code("DSVS " + novoRotulo());
     popPenultRotulo();
 }
 
 /* WHILE */
-void beginWhile() { MEPA.rotAddrNome(novoRotulo()); }
+void beginWhile() {
+    // MEPA.rotAddrNome(novoRotulo());
+    MEPA.write_rotulo(novoRotuloc(), "NADA");
+}
 void endWhile() {
-    std::string begin, end;
-    end = getRotulo();
+    char end = stack_rotulos.back();
     stack_rotulos.pop_back();
 
-    begin = getRotulo();
+    std::string begin = getRotulo();
     stack_rotulos.pop_back();
 
-    // geraCodigo_(MEPA::JUMP, begin);
-    // geraCodigo_(MEPA::ROTULO(end));
-    MEPA.JumpTo(begin);
-    MEPA.rotAddrNome(end, "NADA");
+    MEPA.write_code("DSVS " + begin);
+    MEPA.write_rotulo(end, "NADA");
 }
 
 /* OPERACAO (EXPRESSAO) */
-void aplicarOperacao(simbolos simbolo) {
-    MEPA.Operacao(operations[simbolo].first, operations[simbolo].second);
-}  // token MAIS/DIV/OR/...)
+// from CodeGenContext
+void aplicarOperacao(const std::string& command, VariableType resultado) {
+    //                    CodeGenerationContext& context) {
+    MEPA.write_code(command);
+    flags(command);
+
+    stack_tipos.pop_back();
+    stack_tipos.pop_back();
+
+    if (resultado != VariableType::UNDEFINED) {
+        stack_tipos.push_back(resultado);
+    }
+}
 
 /* FATOR */
 void saveVariavel() {
@@ -235,14 +235,15 @@ void saveVariavel() {
     if (simbolo->getCategoria() == Category::VARIAVEL_SIMPLES) {
         stack_tipos.push_back(simbolo->getTipo());
     }
-    MEPA.LoadFrom(getAddrLex());
+    // MEPA.LoadFrom(getAddrLex());
+    MEPA.write_code("CRVL " + getAddrLex());
 }
 void loadConstante(std::string valor) {
     if (valor == "true" || valor == "false") {
         stack_tipos.push_back(VariableType::BOOLEANO);
-        MEPA.LoadValue(std::to_string(valor == "true"));
+        MEPA.write_code("CRCT " + itoa(valor == "true"));
     } else {
-        MEPA.LoadValue(valor);
+        MEPA.write_code("CRCT " + valor);
         stack_tipos.push_back(VariableType::INTEIRO);
     }
 
@@ -262,7 +263,7 @@ void removeForaEscopo() {
         stack_rotulos.pop_back();
     }
 
-    flags(std::to_string(nivel_lexico));
+    flags(itoa(nivel_lexico));
     // TS.RemoveProcedures(nivel_lexico);
 
     /* mudar pra remover procedure sse sai do escopo */
@@ -294,14 +295,11 @@ void operaTiposValidos(VariableType resultado) {
 
 std::string getAddrLex() {
     Simbolo* simbolo = TS.BuscarSimbolo(meu_token);
-    if (simbolo == nullptr) {
+    if (simbolo == nullptr || simbolo->getCategoria() == Category::PROCEDURE) {
         error("undefined symbol (" + std::string(meu_token) + ")");
     }
 
-    std::string nl = std::to_string(simbolo->getNivelLexico());
-    std::string ds = std::to_string(simbolo->getDeslocamento());
-
-    return nl + ", " + ds;
+    return itoa(simbolo->getNivelLexico(), simbolo->getDeslocamento());
 }
 
 void popPenultRotulo() {
@@ -310,12 +308,14 @@ void popPenultRotulo() {
         error("stack underflow on rotulos");
     }
 
-    std::ostringstream rotulo;
-    rotulo << "R" << std::setfill('0') << std::setw(2) << (int)stack_rotulos.at(rot_size - 2);
-    // geraCodigo_(MEPA::ROTULO(rotulo.str()));
-    MEPA.rotAddrNome(rotulo.str(), "NADA");
+    char topo = stack_rotulos.back();
+    stack_rotulos.pop_back();
 
-    stack_rotulos.erase(stack_rotulos.end() - 2);
+    char subtop = stack_rotulos.back();
+    stack_rotulos.pop_back();
+    stack_rotulos.push_back(topo);
+
+    MEPA.write_rotulo(subtop, "NADA");
 }
 
 std::string novoRotulo() {
@@ -349,10 +349,9 @@ void popRotulo() {
     if (rot_size < 1) {
         error("stack underflow on rotulos");
     }
-    std::string topo = getRotulo();
-    stack_rotulos.pop_back();
 
-    MEPA.rotAddrNome(topo, "NADA");
+    MEPA.write_rotulo(stack_rotulos.back(), "NADA");
+    stack_rotulos.pop_back();
 }
 
 // espelho de bison::Parse::error
@@ -370,4 +369,16 @@ void print_tipos() {
     }
 
     std::cout << " (back)" << std::endl;
+}
+
+const std::string& itoa(int arg1) {
+    static std::string result;
+    result = std::to_string(arg1);
+    return result;
+}
+
+const std::string& itoa(int arg1, int arg2) {
+    static std::string result;
+    result = std::to_string(arg1) + ", " + std::to_string(arg2);
+    return result;
 }

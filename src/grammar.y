@@ -213,12 +213,12 @@ lista_expr  : lista_expr VIRGULA { } expr
 
 /* 25. & 26. */
 expr        : expr_simples 
-            | expr_simples MENOR       expr_simples { aplicarOperacao(simb_menor); }
-            | expr_simples MAIOR       expr_simples { aplicarOperacao(simb_maior); }
-            | expr_simples IGUALDADE   expr_simples { aplicarOperacao(simb_igualdade); }
-            | expr_simples DIFERENCA   expr_simples { aplicarOperacao(simb_diferenca); }
-            | expr_simples MAIOR_IGUAL expr_simples { aplicarOperacao(simb_maior_igual); }
-            | expr_simples MENOR_IGUAL expr_simples { aplicarOperacao(simb_menor_igual); }
+            | expr_simples MENOR       expr_simples { aplicarOperacao("CMME", BOOLEANO); }
+            | expr_simples MAIOR       expr_simples { aplicarOperacao("CMMA", BOOLEANO); }
+            | expr_simples IGUALDADE   expr_simples { aplicarOperacao("CMIG", BOOLEANO); }
+            | expr_simples DIFERENCA   expr_simples { aplicarOperacao("CMDG", BOOLEANO); }
+            | expr_simples MAIOR_IGUAL expr_simples { aplicarOperacao("CMAG", BOOLEANO); }
+            | expr_simples MENOR_IGUAL expr_simples { aplicarOperacao("CMEG", BOOLEANO); }
 ;
 
 /* 27. */
@@ -227,16 +227,16 @@ expr        : expr_simples
 // /* 27. */
 // opt_sinal   : MAIS | MENOS | /* vazio */;
 // conteudo    : conteudo oper | termo ;
-expr_simples: expr_simples MAIS  termo { aplicarOperacao(simb_mais); }   
-            | expr_simples MENOS termo { aplicarOperacao(simb_menos); }   
-            | expr_simples OR    termo { aplicarOperacao(simb_or); } 
+expr_simples: expr_simples MAIS  termo { aplicarOperacao("SOMA", INTEIRO); }
+            | expr_simples MENOS termo { aplicarOperacao("SUBT", INTEIRO); }
+            | expr_simples OR    termo { aplicarOperacao("DISJ", BOOLEANO); }
             | termo
 ;
 
 /* 28. */
-termo       : termo MULT fator { aplicarOperacao(simb_mult); }
-            | termo DIV  fator { aplicarOperacao(simb_div); } 
-            | termo AND  fator { aplicarOperacao(simb_and); }
+termo       : termo MULT fator { aplicarOperacao("MULT", INTEIRO); }
+            | termo DIV  fator { aplicarOperacao("DIVI", INTEIRO); }
+            | termo AND  fator { aplicarOperacao("CONJ", BOOLEANO); }
             | fator
 ;
 

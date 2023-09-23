@@ -90,8 +90,6 @@ extern std::string addr_variavel;
 
 extern bool print; /*helper*/
 
-extern std::map<simbolos, std::pair<const char*, VariableType>> operations;
-
 /* -------------------------------------------------------------------
  * prototipos globais
  * ------------------------------------------------------------------- */
@@ -126,8 +124,8 @@ void elseCondicional();
 void beginWhile();
 void endWhile();
 
-void aplicarOperacao(simbolos simbolo);  // token MAIS/DIV/OR/...)
-
+// void aplicarOperacao(simbolos simbolo);  // token MAIS/DIV/OR/...)
+void aplicarOperacao(const std::string& command, VariableType resultado);
 void saveVariavel();
 void loadConstante(std::string valor);
 
@@ -153,5 +151,7 @@ void geraCodigoEndWhile();
 /* utils */
 void print_tipos();
 void error(const std::string& msg);
+const std::string& itoa(int arg1);
+const std::string& itoa(int arg1, int arg2);
 
 #endif  // COMPILADOR_HPP
