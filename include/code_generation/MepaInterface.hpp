@@ -9,8 +9,11 @@
 
 class MepaInterface {
    public:
-    MepaInterface();
-    MepaInterface(std::string mepa_file);
+    // MepaInterface();
+    MepaInterface(const std::string& outputFile);
+
+    void write_code(const std::string& command);
+    void write_rotulo(char rotulo, const std::string& nome);
 
     void Start();
     void Finish();

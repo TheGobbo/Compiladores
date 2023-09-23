@@ -55,7 +55,7 @@ programa    :
 
 /* 2. */
 bloco       : 
-            parte_declara_vars      { varsDeclarado(); }
+            parte_declara_vars      { varsDeclarado(); flags("DEU PAU");}
 
             /* parte_declara_rotulos */
             parte_declara_subrot    { subrotDeclarado(); }
@@ -71,7 +71,8 @@ bloco       :
 
 
 /* 8. */
-parte_declara_vars  : var
+parte_declara_vars  : parte_declara_vars var
+                    | var
 ;
 
 /* 9. */
@@ -162,7 +163,7 @@ comando_sem_rotulo  : atribuicao_e_procedimento
 ;
 
 /* 18. + aula 10*/
-atribuicao_e_procedimento   : IDENT { declaraIdentificador(); } ident_continua
+atribuicao_e_procedimento   : IDENT { flags(std::string(meu_token) + "<<<<"); declaraIdentificador(); } ident_continua
 ;
 
 /* 18. + aula 10*/
@@ -180,7 +181,7 @@ lista_write : lista_write VIRGULA fator { Write(); }
 
 // 
 // /* 19. */
-atribuicao  : ATRIBUICAO expr 
+atribuicao  : ATRIBUICAO { print_tipos(); } expr  {  }
 ;
 
 /* 20. */
@@ -245,7 +246,7 @@ fator   : variavel
         | FALSE     { loadConstante("false"); }
         | NUMERO    { loadConstante(std::string(meu_token)); }
         | ABRE_PARENTESES expr FECHA_PARENTESES
-        /* | NOT fator */
+        /* | NOT fator  */
         /* | chamada_funcao */
 ;
 

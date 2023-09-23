@@ -14,8 +14,6 @@
 #ifndef COMPILADOR_HPP
 #define COMPILADOR_HPP
 
-#define TAM_TOKEN 16
-
 #include <map>
 
 #include "code_generation/MepaInterface.hpp"
@@ -81,7 +79,7 @@ extern MepaInterface MEPA;
 extern TabelaSimbolos TS;
 extern simbolos simbolo;
 
-extern char meu_token[TAM_TOKEN];
+extern std::string meu_token;
 extern int nivel_lexico;
 
 extern int num_line;

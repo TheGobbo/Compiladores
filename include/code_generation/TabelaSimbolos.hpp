@@ -26,7 +26,7 @@ class TabelaSimbolos {
     void InsereSimbolo(Simbolo* simbolo);
     void RemoveSimbolos(int quantidade_simbolos);
     // void RemoveProcedures(int nivel_lexico);
-    Simbolo* BuscarSimbolo(char (&identificador)[TAM_TOKEN]);
+    Simbolo* BuscarSimbolo(const std::string& identificador);
     Simbolo* getTopo();
 
     bool empty();

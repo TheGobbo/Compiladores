@@ -37,7 +37,7 @@ void TabelaSimbolos::setTipos(VariableType tipo) {
 }
 
 void TabelaSimbolos::InsereSimbolo(Simbolo* simbolo) {
-    if (simbolo == nullptr || !simbolo->valido()) {
+    if (simbolo == nullptr) {
         std::cerr << "'Insere simbolo' abortado, 'simbolo' invalido\n";
         return;
     }
@@ -85,11 +85,11 @@ void TabelaSimbolos::RemoveSimbolos(int quantidade_simbolos) {
 //     }
 // }
 
-Simbolo* TabelaSimbolos::BuscarSimbolo(char (&identificador)[TAM_TOKEN]) {
+Simbolo* TabelaSimbolos::BuscarSimbolo(const std::string& identificador) {
     Simbolo* simb = nullptr;
     for (auto it = this->tabelaDeSimbolos.rbegin(); it != this->tabelaDeSimbolos.rend(); ++it) {
         simb = (Simbolo*)*it;
-        if (std::strncmp(simb->getIdent(), identificador, TAM_TOKEN) == 0) {
+        if (simb->getIdentificador() == identificador) {
             return simb;
         }
     }
@@ -110,56 +110,3 @@ void TabelaSimbolos::show() {
 bool TabelaSimbolos::empty() { return this->tabelaDeSimbolos.empty(); }
 
 void TabelaSimbolos::clear() { this->RemoveSimbolos(this->quantidade_simbolos); }
-/*
-// testes da classe
-int main() {
-    // Create a TabelaSimbolos object
-    TabelaSimbolos tabela;
-
-    // Create Simbolo objects
-    char id1[TAM_TOKEN] = "primeiro";
-    char id2[TAM_TOKEN] = "segundo";
-    char(&rid1)[TAM_TOKEN]{id1};
-    char(&rid2)[TAM_TOKEN]{id2};
-
-    Simbolo* s1{new Simbolo{rid1, VARIAVEL_SIMPLES, 0, 0}};
-    Simbolo* s2{new Simbolo{rid2, PROCEDURE, 1, 1}};
-
-    // Insert Simbolo objects into the TabelaSimbolos
-    tabela.InsereSimbolo(s1);
-    tabela.InsereSimbolo(s2);
-
-    // Display the contents of the TabelaSimbolos
-    tabela.show();
-
-    // Search for a Simbolo by identificador
-    Simbolo* foundSymbol = tabela.BuscarSimbolo(rid1);
-    if (foundSymbol) {
-        std::cout << "Found Simbolo: ";
-        foundSymbol->show();
-    } else {
-        std::cout << "Simbolo not found.\n";
-    }
-
-    // Remove Simbolos
-    tabela.RemoveSimbolos(1);
-
-    // Display the updated contents of the TabelaSimbolos
-    tabela.show();
-
-    // Search for a Simbolo that has been removed
-    foundSymbol = tabela.BuscarSimbolo(rid1);
-    if (foundSymbol) {
-        std::cout << "Found Simbolo: ";
-        foundSymbol->show();
-    } else {
-        std::cout << "Simbolo not found (after removal)." << '\n';
-    }
-
-    tabela.RemoveSimbolos(-3);
-    tabela.InsereSimbolo(nullptr);
-    tabela.InsereSimbolo({new Simbolo{rid1, VARIAVEL_SIMPLES, -1, 0}});
-
-    return 0;
-}
-*/

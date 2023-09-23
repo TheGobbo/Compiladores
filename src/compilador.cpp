@@ -38,8 +38,8 @@ std::deque<int> stack_mem;
 TabelaSimbolos TS;
 simbolos simbolo;
 
-char meu_token[TAM_TOKEN];
-char proc_tk[TAM_TOKEN]; /* GAMBI */
+std::string meu_token;
+std::string proc_tk; /* GAMBI */
 int nivel_lexico = 0;
 
 int num_line = 1;
@@ -121,8 +121,13 @@ void aplicarTipos() {
     TS.setTipos(tipo);
 }
 void novoSimbolo() {
-    Simbolo* var{new Simbolo{meu_token, VARIAVEL_SIMPLES, nivel_lexico,
-                             TS.getNovoDeslocamento(nivel_lexico)}};
+    // Simbolo* var{new Simbolo{meu_token, VARIAVEL_SIMPLES, nivel_lexico,
+    //                          TS.getNovoDeslocamento(nivel_lexico)}};
+
+    Simbolo* var{new Simbolo{meu_token, VARIAVEL_SIMPLES, nivel_lexico}};
+    var->setDeslocamento(TS.getNovoDeslocamento(nivel_lexico));
+    var->setTipo(UNDEFINED);
+
     TS.InsereSimbolo(var);
     num_amem++;
 }
@@ -137,9 +142,11 @@ void beginProcedure() {
     // MEPA.JumpTo(getRotulo(novorot));
     MEPA.JumpTo(novoRotulo());
 
-    Simbolo* proc{new Simbolo{meu_token, PROCEDURE, nivel_lexico, numero_params}};
-    // proc->setRotulo(novorot);
+    // Simbolo* proc{new Simbolo{meu_token, PROCEDURE, nivel_lexico, numero_params}};
+    Simbolo* proc{new Simbolo{meu_token, PROCEDURE, nivel_lexico}};
+    proc->setNumParams(numero_params);
     proc->setRotulo(novoRotuloc());
+    // proc->setRotulo(novorot);
     TS.InsereSimbolo(proc);
 
     MEPA.ProcInit(getRotulo(), nivel_lexico);
@@ -176,12 +183,13 @@ void declaraIdentificador() {
     if (simbolo == nullptr) error("symbol not found");
 
     if (simbolo->getCategoria() == Category::VARIAVEL_SIMPLES) {
+        flags(simbolo->getTipo());
         stack_tipos.push_back(simbolo->getTipo());
         addr_variavel = getAddrLex();
     }
 
     if (simbolo->getCategoria() == Category::PROCEDURE) {
-        strncpy(proc_tk, meu_token, TAM_TOKEN); /* GAMBI */
+        proc_tk = meu_token; /* GAMBI */
     }
 }  // salvarVarSimples
 
@@ -286,7 +294,7 @@ void operaTiposValidos(VariableType resultado) {
 
 std::string getAddrLex() {
     Simbolo* simbolo = TS.BuscarSimbolo(meu_token);
-    if (simbolo == nullptr || !simbolo->valido()) {
+    if (simbolo == nullptr) {
         error("undefined symbol (" + std::string(meu_token) + ")");
     }
 

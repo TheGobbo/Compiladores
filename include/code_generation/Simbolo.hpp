@@ -1,66 +1,53 @@
 #ifndef SIMBOLO_HPP
 #define SIMBOLO_HPP
 
-#include <forward_list>
 #include <string>
+#include <vector>
 
-#define TAM_TOKEN 16
-
-// declarar dpois std::stack<Simbolo> tabelaDeSimbolos;
 typedef enum { VARIAVEL_SIMPLES, PARAMETRO_FORMAL, PROCEDURE } Category;
-typedef enum { BY_VALUE, BY_REFERENCE } PassageType;  // for formal parameters
 typedef enum { INTEIRO, BOOLEANO, UNDEFINED } VariableType;
+typedef enum { BY_VALUE, BY_REFERENCE } PassageType;  // for formal parameters
 
-typedef std::forward_list<std::pair<VariableType, PassageType>> ParamFormal;
-
-// struct detalhes_proc {
-//     /* proc */
-//     char rotulo;                // constant from start Rotulo: R000, R001, ... , R255
-//     ParamFormal param_formais;  // (p1, var p2, p3, ...)
-// };
-
-// struct detalhes_vars {
-//     VariableType tipo; /* var simples */
-//     PassageType pass;  /* param formal */
-// };
-
-// union DetalhesSimb {
-//     struct detalhes_proc proc;
-//     struct detalhes_vars vars;
-// };
+typedef std::vector<std::pair<VariableType, PassageType>> ParamFormal;
 
 class Simbolo {
    public:
-    Simbolo(char* identificador, Category categoria, int nivel_lexico, int deslocamento);
+    Simbolo(const std::string& identificador, Category categoria, int nivel_lexico);
 
-    void setTipo(VariableType tipo);
-    void setRotulo(char rotulo);
+    // Setters for additional attributes based on the category
+    Simbolo& setTipo(VariableType tipo);
+    Simbolo& setDeslocamento(int deslocamento);
+    Simbolo& setRotulo(char rotulo);
+    Simbolo& setNumParams(int num_params);
+    Simbolo& addParam(VariableType tipo, PassageType passagem);
+    Simbolo& setPassagem(PassageType passagem);
 
-    // somente getters, proibe alteracao
-    char* getIdent();
-    VariableType getTipo();
-    Category getCategoria();
-    int getNivelLexico();
-    int getDeslocamento();
-    int getNumParamFormal();
-    char getRotulo();
+    // Getters proibem alteracao
+    std::string getIdentificador() const;
+    const ParamFormal& getParams() const;
+    Category getCategoria() const;
+    VariableType getTipo() const;
+    int getDeslocamento() const;
+    int getNivelLexico() const;
+    int getTamParams() const;
+    char getRotulo() const;
 
-    bool valido();
-    // bool operator==(Simbolo& other);
-
+    // cout << Simbolo
     void show();
 
    private:
-    char identificador[TAM_TOKEN];  // constant from start
-    Category categoria;             // constant from start
-    int nivel_lexico;               // constant from start
-    int numero;                     // constant from start (deslocamento ou num_param_formais)
+    std::string identificador;
+    Category categoria;
+    int nivel_lexico;
 
-    // DetalhesSimb detalhes;  // dependente da categoria
-    VariableType tipo;          /* var simples */
-    PassageType pass;           /* param formal */
-    char rotulo;                // constant from start Rotulo: R000, R001, ... , R255
-    ParamFormal param_formais;  // (p1, var p2, p3, ...)
+    // Other attributes depending on the category
+    PassageType passagem;
+    VariableType tipo;
+    int deslocamento;
+
+    char rotulo;
+    int num_params;
+    ParamFormal params;
 };
 
 #endif

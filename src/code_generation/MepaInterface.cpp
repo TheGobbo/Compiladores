@@ -10,10 +10,22 @@
  * MEPA STREAM
  * ------------------------------------------------------------------- */
 
-MepaInterface::MepaInterface() : mepa_file{"MEPA"} { this->mepa_stream.open(this->mepa_file); }
+// MepaInterface::MepaInterface() { this->mepa_stream.open(this->mepa_file); }
 
-MepaInterface::MepaInterface(std::string mepa_file) : mepa_file{mepa_file} {
-    this->mepa_stream.open(this->mepa_file);
+MepaInterface::MepaInterface(const std::string& outputFile) : mepa_file{outputFile} {
+    // std::ofstream output(outputFile, std::ofstream::out);
+    this->mepa_stream.open(outputFile, std::ofstream::out);
+}
+
+void MepaInterface::write_code(const std::string& command) {
+    this->mepa_stream << command << "\n";
+    this->mepa_stream.flush();
+}
+
+void MepaInterface::write_rotulo(char rotulo, const std::string& nome) {
+    std::ostringstream format;
+    format << "R" << std::setfill('0') << std::setw(2) << (int)rotulo;
+    this->write_code(format.str() + ": " + nome);
 }
 
 void MepaInterface::geraCodigo_() {

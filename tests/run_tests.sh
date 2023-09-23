@@ -1,7 +1,8 @@
 #!/bin/bash
 
 # Run 'make clean && make' to compile your code and clean build artifacts
-make clean && make
+# makefile already does this, to run script my hand, uncomment the following line
+# make clean --no-print-directory && make --no-print-directory
 
 # Define the input and expected output folders
 input_folder="tests/input"
@@ -15,7 +16,12 @@ RED='\033[0;31m'
 NC='\033[0m' # No Color
 
 # Iterate through all pairs of fileX.pas and outputX.txt files
-for input_file in $input_folder/aula*.pas; do
+for input_file in $input_folder/*.pas; do
+    # ignore if starts with underline "_"
+    if [[ "$(basename "$input_file")" =~ ^_ ]]; then
+        continue;
+    fi
+    
     # Extract the corresponding output file name
     output_file="$output_folder/$(basename "$input_file" .pas).mepa"
     
@@ -32,5 +38,3 @@ for input_file in $input_folder/aula*.pas; do
     # Clean up temporary files
     # rm temp_output.txt
 done
-
-make clean

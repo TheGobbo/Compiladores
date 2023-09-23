@@ -23,7 +23,7 @@ all: $(OBJS)
 
 # Run the compiled program
 run: all
-	./compilador < tests/input/aula10_escopo.pas
+	./compilador < tests/input/varsGlobais.pas
 
 # Run tests
 test: all
@@ -31,8 +31,9 @@ test: all
 
 # Clean object files and generated files
 clean:
-	rm -f Parser* Scanner* *.o src/*.o compilador
+	rm -f *.o Parser* Scanner*
+	find tests/input/ -type f ! -name "*.pas" -exec rm -f {} \;
 
 # Clean all generated files, including the compiled program
 clear: clean
-
+	rm -f compilador
