@@ -33,6 +33,7 @@ class TabelaSimbolos {
     void clear();
 
     int getNovoDeslocamento(int nivel_lexico);
+    int size() const;
     void setTipos(VariableType tipo);
 
     void show();

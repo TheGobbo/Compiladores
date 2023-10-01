@@ -110,3 +110,5 @@ void TabelaSimbolos::show() {
 bool TabelaSimbolos::empty() { return this->tabelaDeSimbolos.empty(); }
 
 void TabelaSimbolos::clear() { this->RemoveSimbolos(this->quantidade_simbolos); }
+
+int TabelaSimbolos::size() const { return this->tabelaDeSimbolos.size(); }

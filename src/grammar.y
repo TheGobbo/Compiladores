@@ -55,7 +55,7 @@ programa    :
 
 /* 2. */
 bloco       : 
-            parte_declara_vars      { varsDeclarado(); flags("DEU PAU");}
+            parte_declara_vars      { varsDeclarado(); }
 
             /* parte_declara_rotulos */
             parte_declara_subrot    { subrotDeclarado(); }
@@ -112,7 +112,7 @@ parte_declara_subrot : parte_declara_subrot declara_procedimento PONTO_E_VIRGULA
 /* 12. */
 declara_procedimento : PROCEDURE IDENT 
                     { beginProcedure(); } 
-                        param_formais PONTO_E_VIRGULA bloco 
+                        param_formais PONTO_E_VIRGULA  bloco 
                     { endProcedure(); }
 ;
 // 
@@ -163,7 +163,7 @@ comando_sem_rotulo  : atribuicao_e_procedimento
 ;
 
 /* 18. + aula 10*/
-atribuicao_e_procedimento   : IDENT { flags(std::string(meu_token) + "<<<<"); declaraIdentificador(); } ident_continua
+atribuicao_e_procedimento   : IDENT { declaraIdentificador(); } ident_continua
 ;
 
 /* 18. + aula 10*/

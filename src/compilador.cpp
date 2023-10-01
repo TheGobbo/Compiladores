@@ -22,8 +22,8 @@
 #define RED "\033[1;31m"
 #define NC "\033[0m"  // No color
 
-#define flags(STR) std::cerr << RED << STR << NC
-#define print(STR) std::cerr << GREEN << STR << NC
+#define flags(STR) std::cerr << RED << STR << NC << std::endl
+#define print(STR) std::cerr << GREEN << STR << NC << std::endl
 
 /* -------------------------------------------------------------------
  * Classe de rotulos
@@ -37,6 +37,8 @@ Rotulos& Rotulos::push() {
         error("Stack rotulos overflow");
     }
     this->stack_rotulos.push_back(this->rotulo);
+    print("adiciona rot " + std::to_string((int)this->rotulo));
+
     this->rotulo++;
     return *this;
 }
@@ -47,6 +49,8 @@ Rotulos& Rotulos::push(char r) {
         error("Stack rotulos overflow");
     }
     this->stack_rotulos.push_back(r);
+    print("adiciona rot " + std::to_string((int)r));
+
     return *this;
 }
 
@@ -55,6 +59,7 @@ Rotulos& Rotulos::pop() {
     if (this->stack_rotulos.empty()) {
         error("Stack rotulos is empty.");
     }
+    flags("remove rot " + std::to_string((int)stack_rotulos.back()));
     this->stack_rotulos.pop_back();
     return *this;
 }
@@ -66,6 +71,9 @@ char Rotulos::top() const {
     }
     return this->stack_rotulos.back();
 }
+
+// retorna o próximo rotulo, sem alterar a stack, mas aumentando a contagem
+// char Rotulos::peek() { return this->rotulo++; }
 
 /* transforma topo da stack em -> R003 */
 std::string Rotulos::transformTop() const {
@@ -88,11 +96,12 @@ int Rotulos::size() { return this->stack_rotulos.size(); }
 
 /* imprime a stack na tela */
 void Rotulos::show() {
-    flags("Nivel Lex : " + itoa(nivel_lexico));
+    std::cerr << RED << "STACK_ROTULOS, nivel lexico : " << itoa(nivel_lexico) << std::endl;
     std::deque<char>::iterator it;
     for (it = this->stack_rotulos.begin(); it != this->stack_rotulos.end(); ++it) {
-        flags("stack rotulos: R" + (int)(*it));
+        std::cerr << ">>>>>>> R00" << (int)(*it) << std::endl;
     }
+    std::cerr << "STACK_ROTULOS BACK\n" << NC << std::endl;
 }
 
 /* -------------------------------------------------------------------
@@ -134,22 +143,24 @@ void endCompilador() {
     MEPA.write_code("PARA");
     TS.clear();
     TS.show();
+    stack_rotulos.show();
 }
 
 /* BLOCO */
 void varsDeclarado() {
     MEPA.Alloc(num_amem);
     stack_mem.push_back(num_amem);
+
+    stack_rotulos.push();
+    MEPA.write_code("DSVS " + stack_rotulos.transformTop());
+
     num_amem = 0;
     print = true;
 }
 void subrotDeclarado() {
-    TS.show();
-
-    if (stack_rotulos.size() == 1) {
-        MEPA.write_rotulo(stack_rotulos.top(), "NADA");
-        stack_rotulos.pop();
-    }
+    // TS.show();
+    MEPA.write_rotulo(stack_rotulos.top(), "NADA");
+    stack_rotulos.pop();
 }
 void endComandos() {
     removeForaEscopo();
@@ -182,20 +193,16 @@ void beginProcedure() {
     int numero_params = 0;
     nivel_lexico++;
 
-    MEPA.write_code("DSVS " + stack_rotulos.push().transformTop());
-
     Simbolo* proc{new Simbolo{meu_token, PROCEDURE, nivel_lexico}};
     proc->setNumParams(numero_params);
     proc->setRotulo(stack_rotulos.push().top());
-
     TS.InsereSimbolo(proc);
 
     MEPA.write_rotulo(stack_rotulos.top(), "ENPR " + itoa(nivel_lexico));
+    stack_rotulos.pop();
 }
 void endProcedure() {
     MEPA.write_code("RTPR " + itoa(nivel_lexico, 0));
-
-    stack_rotulos.pop();
     nivel_lexico--;
 }
 void callProcedure() {
@@ -209,7 +216,7 @@ void callProcedure() {
     }
 
     char rotulo = proc->getRotulo();
-    MEPA.write_code("CHPR " + stack_rotulos.transform(rotulo));
+    MEPA.write_code("CHPR " + stack_rotulos.transform(rotulo) + ", " + itoa(nivel_lexico));
 }
 
 /* ATRIBUICAO */
@@ -314,13 +321,7 @@ void removeForaEscopo() {
     TS.RemoveSimbolos(num_vars);
 
     while (!TS.empty() && TS.getTopo()->getNivelLexico() - 1 >= nivel_lexico) {
-        std::cerr << "TO REMOVE ";
-        TS.getTopo()->show();
-        // std::cerr << " WITH ROTULO " << getRotulo() << '\n';
-        // std::cerr << "ROTULO SIZE: " << stack_rotulos.size() << "\n";
-        TS.show();
         TS.RemoveSimbolos(1);
-        stack_rotulos.pop();
     }
 }
 
@@ -365,13 +366,13 @@ void error(const std::string& msg) {
 
 void print_tipos() {
     const char* variableTypeNames[] = {"INTEIRO", "BOOLEANO", "UNDEFINED"};
-    std::cout << "stack_tipos : (front) ";
+    print("stack_tipos : (front) ");
     for (auto it = stack_tipos.begin(); it != stack_tipos.end(); ++it) {
         if (it != stack_tipos.begin()) std::cout << ", ";
         std::cout << variableTypeNames[*it];
     }
 
-    std::cout << " (back)" << std::endl;
+    print(" (back)");
 }
 
 const std::string& itoa(int arg1) {
