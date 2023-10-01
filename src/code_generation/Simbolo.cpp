@@ -35,6 +35,11 @@ Simbolo& Simbolo::addParam(VariableType tipo, PassageType passagem) {
     return *this;
 }
 
+Simbolo& Simbolo::setParams(ParamFormal params) {
+    this->params = params;
+    return *this;
+}
+
 Simbolo& Simbolo::setPassagem(PassageType passagem) {
     this->passagem = passagem;
     return *this;
@@ -49,6 +54,8 @@ const ParamFormal& Simbolo::getParams() const { return this->params; }
 Category Simbolo::getCategoria() const { return this->categoria; }
 
 VariableType Simbolo::getTipo() const { return this->tipo; }
+
+PassageType Simbolo::getPassage() const { return this->passagem; };
 
 int Simbolo::getDeslocamento() const { return this->deslocamento; }
 

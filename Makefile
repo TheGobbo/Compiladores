@@ -23,7 +23,7 @@ all: $(OBJS)
 
 # Run the compiled program
 run: all
-	./compilador < tests/input/varsGlobais.pas
+	./compilador < tests/input/aula11_stress.pas
 
 # Run tests
 test: all

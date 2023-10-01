@@ -102,7 +102,7 @@ extern int nivel_lexico;
 
 extern int num_line;
 extern int num_amem;
-extern char num_rots;
+extern char num_params;
 
 extern std::string addr_variavel;
 
@@ -123,6 +123,9 @@ void endComandos();
 
 void aplicarTipos();
 void novoSimbolo();  // declaraVar();
+
+void paramFormal();
+void fimParamFormal();
 
 void beginProcedure();
 void endProcedure();

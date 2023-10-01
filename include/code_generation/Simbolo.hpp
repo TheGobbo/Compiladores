@@ -20,6 +20,7 @@ class Simbolo {
     Simbolo& setRotulo(char rotulo);
     Simbolo& setNumParams(int num_params);
     Simbolo& addParam(VariableType tipo, PassageType passagem);
+    Simbolo& setParams(ParamFormal params);
     Simbolo& setPassagem(PassageType passagem);
 
     // Getters proibem alteracao
@@ -27,6 +28,7 @@ class Simbolo {
     const ParamFormal& getParams() const;
     Category getCategoria() const;
     VariableType getTipo() const;
+    PassageType getPassage() const;
     int getDeslocamento() const;
     int getNivelLexico() const;
     int getTamParams() const;

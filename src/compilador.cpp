@@ -123,7 +123,7 @@ int nivel_lexico = 0;
 
 int num_line = 1;
 int num_amem = 0;
-char num_rots = 0;
+char num_params = 0;
 
 std::string addr_variavel;
 
@@ -202,8 +202,9 @@ void beginProcedure() {
     stack_rotulos.pop();
 }
 void endProcedure() {
-    MEPA.write_code("RTPR " + itoa(nivel_lexico, 0));
+    MEPA.write_code("RTPR " + itoa(nivel_lexico, num_params));
     nivel_lexico--;
+    num_params = 0;
 }
 void callProcedure() {
     // TODO empilha parametros
@@ -217,6 +218,21 @@ void callProcedure() {
 
     char rotulo = proc->getRotulo();
     MEPA.write_code("CHPR " + stack_rotulos.transform(rotulo) + ", " + itoa(nivel_lexico));
+}
+
+/* PARAMETROS FORMAIS */
+void paramFormal() {
+    Simbolo* var{new Simbolo{meu_token, PARAMETRO_FORMAL, nivel_lexico}};
+    var->setTipo(UNDEFINED);
+
+    TS.InsereSimbolo(var);
+    // num_amem++;
+}
+
+void fimParamFormal() {
+    num_params = TS.setParamFormal();
+    flags("FIM PF");
+    TS.show();
 }
 
 /* ATRIBUICAO */
@@ -298,7 +314,7 @@ void aplicarOperacao(const std::string& command, VariableType resultado) {
 void saveVariavel() {
     Simbolo* simbolo = TS.BuscarSimbolo(meu_token);
     if (simbolo == nullptr) error("variable not found (" + std::string(meu_token) + ")");
-    if (simbolo->getCategoria() == Category::VARIAVEL_SIMPLES) {
+    if (simbolo->getCategoria() != Category::PROCEDURE) {
         stack_tipos.push_back(simbolo->getTipo());
     }
 

@@ -121,7 +121,7 @@ declara_procedimento : PROCEDURE IDENT
 // ;
 // 
 /* 14. */
-param_formais   : ABRE_PARENTESES nparam_formais FECHA_PARENTESES
+param_formais   : ABRE_PARENTESES nparam_formais FECHA_PARENTESES { fimParamFormal(); }
                 | %empty
 ;
 
@@ -131,10 +131,14 @@ nparam_formais  : nparam_formais PONTO_E_VIRGULA sec_param_formais
 ;
 
 /* 15. */
-sec_param_formais : VAR lista_idents DOIS_PONTOS IDENT
-                  | lista_idents DOIS_PONTOS IDENT
-                  | PROCEDURE lista_idents 
+sec_param_formais : VAR lista_pf DOIS_PONTOS tipo { aplicarTipos(); }
+                  |     lista_pf DOIS_PONTOS tipo { aplicarTipos(); }
+                  /* | PROCEDURE lista_idents  */
                   /* /* | FUNCTION lista_idents DOIS_PONTOS IDENT */
+;
+
+lista_pf    : lista_pf VIRGULA IDENT    { paramFormal(); }
+            | IDENT                     { paramFormal(); }
 ;
 
 /* 16. */
@@ -175,8 +179,8 @@ lista_read  : lista_read VIRGULA IDENT  { Read(); }
             | IDENT                     { Read(); }
 ;
 
-lista_write : lista_write VIRGULA fator { Write(); }
-            | fator                     { Write(); }
+lista_write : lista_write VIRGULA expr { Write(); }
+            | expr                     { Write(); }
 ;
 
 // 
@@ -241,7 +245,7 @@ termo       : termo MULT fator { aplicarOperacao("MULT", INTEIRO); }
 ;
 
 /* 29. */
-fator   : variavel  
+fator   : variavel 
         | TRUE      { loadConstante("true"); }
         | FALSE     { loadConstante("false"); }
         | NUMERO    { loadConstante(std::string(meu_token)); }

@@ -25,7 +25,6 @@ class TabelaSimbolos {
 
     void InsereSimbolo(Simbolo* simbolo);
     void RemoveSimbolos(int quantidade_simbolos);
-    // void RemoveProcedures(int nivel_lexico);
     Simbolo* BuscarSimbolo(const std::string& identificador);
     Simbolo* getTopo();
 
@@ -35,6 +34,7 @@ class TabelaSimbolos {
     int getNovoDeslocamento(int nivel_lexico);
     int size() const;
     void setTipos(VariableType tipo);
+    int setParamFormal();
 
     void show();
 

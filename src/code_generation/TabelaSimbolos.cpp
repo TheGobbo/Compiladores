@@ -16,7 +16,8 @@ int TabelaSimbolos::getNovoDeslocamento(int nivel_lexico) {
 
     Simbolo* topo = (Simbolo*)this->tabelaDeSimbolos.back();
     // inicia com zero se for novo nivel lexico ou se o topo eh procedure
-    return (topo->getNivelLexico() == nivel_lexico && topo->getCategoria() != Category::PROCEDURE)
+    return (topo->getNivelLexico() == nivel_lexico && topo->getDeslocamento() >= 0 &&
+            topo->getCategoria() != Category::PROCEDURE)
                ? topo->getDeslocamento() + 1
                : 0;
 }
@@ -34,6 +35,24 @@ void TabelaSimbolos::setTipos(VariableType tipo) {
         }
         simb->setTipo(tipo);
     }
+}
+
+int TabelaSimbolos::setParamFormal() {
+    int deslocamento = -4;
+
+    ParamFormal infoProc;
+
+    std::deque<Simbolo*>::reverse_iterator simb = this->tabelaDeSimbolos.rbegin();
+    for (; (*simb)->getCategoria() != Category::PROCEDURE; ++simb) {
+        (*simb)->setDeslocamento(deslocamento--);
+        infoProc.push_back(std::make_pair((*simb)->getTipo(), (*simb)->getPassage()));
+    }
+
+    int num_params = std::abs(deslocamento + 4);
+    (*simb)->setNumParams(num_params);
+    (*simb)->setParams(infoProc);
+
+    return num_params;
 }
 
 void TabelaSimbolos::InsereSimbolo(Simbolo* simbolo) {

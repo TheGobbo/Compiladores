@@ -30,9 +30,9 @@ for input_file in $input_folder/*.pas; do
     
     # Use 'diff' to compare the output with the expected output, ignoring white spaces and new lines
     if diff -wB $output "$output_file" ; then
-        echo -e "${GREEN}$(basename "$input_file") passed${NC}"
+        echo -e "${GREEN}passed $(basename "$input_file")${NC}"
     else
-        echo -e "${RED}$(basename "$input_file") failed${NC}"
+        echo -e "${RED}failed $(basename "$input_file")${NC}"
     fi
     
     # Clean up temporary files
