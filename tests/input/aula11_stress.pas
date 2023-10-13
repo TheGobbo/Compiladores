@@ -32,7 +32,7 @@ begin
   flag := true;
 
   WithoutParameters;
-  WithParameters(x, y);
+  WithParameters(1+x-1, y);
   
   NestedProcedure;
   

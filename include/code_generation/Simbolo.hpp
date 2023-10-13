@@ -1,14 +1,18 @@
 #ifndef SIMBOLO_HPP
 #define SIMBOLO_HPP
 
+#include <deque>
 #include <string>
-#include <vector>
 
 typedef enum { VARIAVEL_SIMPLES, PARAMETRO_FORMAL, PROCEDURE } Category;
 typedef enum { INTEIRO, BOOLEANO, UNDEFINED } VariableType;
-typedef enum { BY_VALUE, BY_REFERENCE } PassageType;  // for formal parameters
+typedef enum {
+    BY_VALUE,
+    BY_REFERENCE,
+    BY_UNDEFINED
+} PassageType;  // for formal parameters
 
-typedef std::vector<std::pair<VariableType, PassageType>> ParamFormal;
+typedef std::deque<std::pair<VariableType, PassageType>> ParamFormal;
 
 class Simbolo {
    public:
@@ -26,6 +30,7 @@ class Simbolo {
     // Getters proibem alteracao
     std::string getIdentificador() const;
     const ParamFormal& getParams() const;
+    std::string getAddr() const;
     Category getCategoria() const;
     VariableType getTipo() const;
     PassageType getPassage() const;

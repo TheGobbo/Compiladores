@@ -26,6 +26,35 @@
 #define print(STR) std::cerr << GREEN << STR << NC << std::endl
 
 /* -------------------------------------------------------------------
+ *  variáveis globais
+ * ------------------------------------------------------------------- */
+
+MepaInterface MEPA("output/output.mepa");
+
+std::deque<VariableType> stack_tipos;
+std::deque<int> stack_mem;
+Rotulos stack_rotulos;
+
+TabelaSimbolos TS;
+simbolos simbolo;
+
+std::string meu_token;
+std::string proc_tk; /* GAMBI */
+Simbolo* last_simb;
+// ParamFormal last_proc;
+
+int nivel_lexico = 0;
+int num_line = 1;
+int num_amem = 0;
+char num_params = 0;
+bool pf_ref = false;
+bool chamada_proc = false;
+int idx_params = 0;
+Simbolo* proc_atual = nullptr;
+
+bool print = false;
+
+/* -------------------------------------------------------------------
  * Classe de rotulos
  * ------------------------------------------------------------------- */
 
@@ -96,7 +125,8 @@ int Rotulos::size() { return this->stack_rotulos.size(); }
 
 /* imprime a stack na tela */
 void Rotulos::show() {
-    std::cerr << RED << "STACK_ROTULOS, nivel lexico : " << itoa(nivel_lexico) << std::endl;
+    std::cerr << RED << "STACK_ROTULOS, nivel lexico : " << itoa(nivel_lexico)
+              << std::endl;
     std::deque<char>::iterator it;
     for (it = this->stack_rotulos.begin(); it != this->stack_rotulos.end(); ++it) {
         std::cerr << ">>>>>>> R00" << (int)(*it) << std::endl;
@@ -105,39 +135,14 @@ void Rotulos::show() {
 }
 
 /* -------------------------------------------------------------------
- *  variáveis globais
- * ------------------------------------------------------------------- */
-
-MepaInterface MEPA("output/output.mepa");
-
-std::deque<VariableType> stack_tipos;
-std::deque<int> stack_mem;
-Rotulos stack_rotulos;
-
-TabelaSimbolos TS;
-simbolos simbolo;
-
-std::string meu_token;
-std::string proc_tk; /* GAMBI */
-int nivel_lexico = 0;
-
-int num_line = 1;
-int num_amem = 0;
-char num_params = 0;
-
-std::string addr_variavel;
-
-bool print = false;
-
-/* -------------------------------------------------------------------
  * funcoes do Compilador
  * ------------------------------------------------------------------- */
 
-// auxiliar //
-void saveCurrentSimbolo() {}
-
 /* PROGRAM */
+
 void beginCompilador() { MEPA.write_code("INPP"); }
+
+// remove todos os simbolos na tabela de simbolos
 void endCompilador() {
     print("endCompilador");
     MEPA.write_code("PARA");
@@ -147,6 +152,9 @@ void endCompilador() {
 }
 
 /* BLOCO */
+
+// Escreve alocacao de memoria na mepa e salva na stack_mem
+// ???? DSVS nn lembro pq isso ta aqui, procedures acho?
 void varsDeclarado() {
     MEPA.Alloc(num_amem);
     stack_mem.push_back(num_amem);
@@ -157,11 +165,14 @@ void varsDeclarado() {
     num_amem = 0;
     print = true;
 }
+
+// escreve o rotulo no topo da stack e o remove
 void subrotDeclarado() {
-    // TS.show();
     MEPA.write_rotulo(stack_rotulos.top(), "NADA");
     stack_rotulos.pop();
 }
+
+// remove simbolos fora do escopo, libera memoria destes simbolos
 void endComandos() {
     removeForaEscopo();
     MEPA.Free(stack_mem.back());
@@ -169,95 +180,118 @@ void endComandos() {
 }
 
 /* DECLARA_VARS & LISTA_ID_VAR */
+
+// configura os N ultimos simbolos cujo tipo eh undefined com o simbolo corrente
 void aplicarTipos() {
-    VariableType tipo = simbolo == simb_integer   ? INTEIRO
-                        : simbolo == simb_boolean ? BOOLEANO
-                                                  : UNDEFINED;
+    VariableType tipo = simbolo == simb_integer   ? VariableType::INTEIRO
+                        : simbolo == simb_boolean ? VariableType::BOOLEANO
+                                                  : VariableType::UNDEFINED;
     if (tipo == UNDEFINED) {
         error("undefined type");
     }
 
     TS.setTipos(tipo);
 }
+
+// declaracao de um novo simbolo
 void novoSimbolo() {
+    flags("NOVO SIMB");
     Simbolo* var{new Simbolo{meu_token, VARIAVEL_SIMPLES, nivel_lexico}};
     var->setDeslocamento(TS.getNovoDeslocamento(nivel_lexico));
-    var->setTipo(UNDEFINED);
+    var->setTipo(VariableType::UNDEFINED);
+    var->setPassagem(PassageType::BY_VALUE);
 
     TS.InsereSimbolo(var);
     num_amem++;
 }
 
 /* DECLARA_PROCEDIMENTO */
+// declaracao de um novo procedimento
 void beginProcedure() {
-    int numero_params = 0;
     nivel_lexico++;
 
     Simbolo* proc{new Simbolo{meu_token, PROCEDURE, nivel_lexico}};
-    proc->setNumParams(numero_params);
+    proc->setNumParams(0);
     proc->setRotulo(stack_rotulos.push().top());
     TS.InsereSimbolo(proc);
 
     MEPA.write_rotulo(stack_rotulos.top(), "ENPR " + itoa(nivel_lexico));
     stack_rotulos.pop();
 }
+
 void endProcedure() {
     MEPA.write_code("RTPR " + itoa(nivel_lexico, num_params));
     nivel_lexico--;
     num_params = 0;
 }
-void callProcedure() {
-    // TODO empilha parametros
 
+// chama procedure com ultimo IDENT de procedure salvo
+void callProcedure() {
     Simbolo* proc = TS.BuscarSimbolo(proc_tk); /* GAMBI */
 
     if (proc == nullptr || proc->getCategoria() != Category::PROCEDURE) {
-        std::cerr << "nao achou " << proc_tk << '\n';
+        std::cerr << "nao achou procedure " << proc_tk << '\n';
         return;
     }
 
     char rotulo = proc->getRotulo();
-    MEPA.write_code("CHPR " + stack_rotulos.transform(rotulo) + ", " + itoa(nivel_lexico));
+    MEPA.write_code("CHPR " + stack_rotulos.transform(rotulo) + ", " +
+                    itoa(nivel_lexico));
+
+    chamada_proc = false;
 }
 
 /* PARAMETROS FORMAIS */
+// define tipo de passagem dos params formais encontrados
 void paramFormal() {
     Simbolo* var{new Simbolo{meu_token, PARAMETRO_FORMAL, nivel_lexico}};
-    var->setTipo(UNDEFINED);
+    var->setTipo(VariableType::UNDEFINED);
+
+    if (pf_ref) {
+        var->setPassagem(PassageType::BY_REFERENCE);
+    } else {
+        var->setPassagem(PassageType::BY_VALUE);
+    }
 
     TS.InsereSimbolo(var);
-    // num_amem++;
 }
 
+// configura infos dos params formais
 void fimParamFormal() {
     num_params = TS.setParamFormal();
-    flags("FIM PF");
     TS.show();
 }
 
 /* ATRIBUICAO */
+// carrega valor atribuido ao simbolo na mepa, valida tipos envolvidos
 void aplicaAtribuicao() {
     operaTiposValidos();
-    MEPA.write_code("ARMZ " + addr_variavel);
+    armazenaValor(last_simb);
+    stack_tipos.clear();
 }
+
+// ao encontrar IDENT, define como tratar se for variavel ou procedure
 void declaraIdentificador() {
     Simbolo* simbolo = TS.BuscarSimbolo(meu_token);
     if (simbolo == nullptr) error("symbol not found");
 
-    if (simbolo->getCategoria() == Category::VARIAVEL_SIMPLES) {
+    if (simbolo->getCategoria() != Category::PROCEDURE) {
         stack_tipos.push_back(simbolo->getTipo());
-        addr_variavel = getAddrLex();
+        last_simb = simbolo;
     }
 
     if (simbolo->getCategoria() == Category::PROCEDURE) {
         proc_tk = meu_token; /* GAMBI */
+        proc_atual = simbolo;
     }
 }
 
 /* READ & WRITE */
 void Read() {
     MEPA.write_code("LEIT");
-    MEPA.write_code("ARMZ " + getAddrLex());
+    Simbolo* simbolo = TS.BuscarSimbolo(meu_token);
+    if (!simbolo) error("read symbol not found: " + meu_token);
+    armazenaValor(simbolo);
 }
 void Write() { MEPA.write_code("IMPR"); }
 
@@ -266,7 +300,9 @@ void endCondicional() {
     MEPA.write_rotulo(stack_rotulos.top(), "NADA");
     stack_rotulos.pop();
 }
-void beginCondicional() { MEPA.write_code("DSVF " + stack_rotulos.push().transformTop()); }
+void beginCondicional() {
+    MEPA.write_code("DSVF " + stack_rotulos.push().transformTop());
+}
 
 void elseCondicional() {
     MEPA.write_code("DSVS " + stack_rotulos.push().transformTop());
@@ -297,9 +333,8 @@ void endWhile() {
 }
 
 /* OPERACAO (EXPRESSAO) */
-// from CodeGenContext
+// interface para escrever operacoes mepa
 void aplicarOperacao(const std::string& command, VariableType resultado) {
-    //                    CodeGenerationContext& context) {
     MEPA.write_code(command);
 
     stack_tipos.pop_back();
@@ -311,6 +346,7 @@ void aplicarOperacao(const std::string& command, VariableType resultado) {
 }
 
 /* FATOR */
+// Encontra simbolo do token corrente e carrega seu valor na mepa
 void saveVariavel() {
     Simbolo* simbolo = TS.BuscarSimbolo(meu_token);
     if (simbolo == nullptr) error("variable not found (" + std::string(meu_token) + ")");
@@ -318,9 +354,10 @@ void saveVariavel() {
         stack_tipos.push_back(simbolo->getTipo());
     }
 
-    MEPA.write_code("CRVL " + getAddrLex());
+    carregaValor(simbolo);
 }
 
+// trata carregamento de constante boolean e integer
 // boolean true & false; senao eh integer
 void loadConstante(std::string valor) {
     if (valor == "true" || valor == "false") {
@@ -332,6 +369,7 @@ void loadConstante(std::string valor) {
     }
 }
 
+// remove da tabela de simbolos os simbolos fora do escopo atual em t_compilacao
 void removeForaEscopo() {
     int num_vars = stack_mem.back();
     TS.RemoveSimbolos(num_vars);
@@ -345,6 +383,70 @@ void removeForaEscopo() {
  * funcoes auxiliares
  * ------------------------------------------------------------------- */
 
+// escolhe operacao de carrecar simbolo na mepa
+void carregaValor(Simbolo* simbolo) {
+    int loadType = getLoadType(simbolo, proc_atual);
+    switch (loadType) {
+        case 1:
+            MEPA.write_code("CRVL " + simbolo->getAddr());
+            break;
+        case 2:
+            MEPA.write_code("CRVI " + simbolo->getAddr());
+            break;
+        case 3:
+            MEPA.write_code("CREN " + simbolo->getAddr());
+            break;
+    }
+}
+
+// define logica de como carregar simbolo
+// 1 = CRVL ; 2 = CRVI ; 3 = CREN
+int getLoadType(Simbolo* simbolo, Simbolo* procedure) {
+    PassageType ps_simbolo, ps_formal, by_ref, by_val;
+
+    by_ref = PassageType::BY_REFERENCE;
+    by_val = PassageType::BY_VALUE;
+    ps_simbolo = simbolo->getPassage();
+
+    if (!chamada_proc || !procedure || procedure->getParams().size() == 0) {
+        return ps_simbolo == by_ref ? 2 : 1;
+    }
+
+    ps_formal = proc_atual->getParams().at(idx_params).second;
+
+    // addr & addr ; val & val ;
+    if (ps_formal == ps_simbolo) {
+        return 1;  // CRVL
+    }
+
+    // ps_simb = ref
+    if (ps_formal == PassageType::BY_VALUE) {
+        return 2;  // CRVI
+    }
+
+    // ps_formal = ref
+    if (ps_simbolo == PassageType::BY_VALUE) {
+        return 3;  // CREN
+    }
+
+    error("Nenhum tipo de load especificado!");
+    return -1;
+}
+
+// decide entre ARMZ e ARMI para armazenar simbolo
+void armazenaValor(Simbolo* simbolo) {
+    flags(simbolo);
+    simbolo->show();
+    if (simbolo->getPassage() == PassageType::BY_VALUE) {
+        flags("ARMZ!!!!!!");
+        MEPA.write_code("ARMZ " + simbolo->getAddr());
+    } else {
+        flags("ARMI!!!!!!");
+        MEPA.write_code("ARMI " + simbolo->getAddr());
+    }
+}
+
+// valida operacao de tipos, nao adiciona nada na stack de tipos
 void operaTiposValidos() {
     VariableType l, r;
     print_tipos();
@@ -359,19 +461,11 @@ void operaTiposValidos() {
     }
 }
 
+// valida operacao de tipos e adicionar resultado na stack de tipos
 void operaTiposValidos(VariableType resultado) {
     operaTiposValidos();
     stack_tipos.push_back(resultado);
     print_tipos();
-}
-
-std::string getAddrLex() {
-    Simbolo* simbolo = TS.BuscarSimbolo(meu_token);
-    if (simbolo == nullptr || simbolo->getCategoria() == Category::PROCEDURE) {
-        error("undefined symbol (" + std::string(meu_token) + ")");
-    }
-
-    return itoa(simbolo->getNivelLexico(), simbolo->getDeslocamento());
 }
 
 // espelho de bison::Parse::error
@@ -380,6 +474,7 @@ void error(const std::string& msg) {
     exit(0);
 }
 
+// util para visualizar stack_tipos durante compilacao
 void print_tipos() {
     const char* variableTypeNames[] = {"INTEIRO", "BOOLEANO", "UNDEFINED"};
     print("stack_tipos : (front) ");
@@ -391,12 +486,14 @@ void print_tipos() {
     print(" (back)");
 }
 
+// util que transforma int em addr string pra mepa
 const std::string& itoa(int arg1) {
     static std::string result;
     result = std::to_string(arg1);
     return result;
 }
 
+// util que transforma dois ints em addr string pra mepa
 const std::string& itoa(int arg1, int arg2) {
     static std::string result;
     result = std::to_string(arg1) + ", " + std::to_string(arg2);

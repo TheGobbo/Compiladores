@@ -20,51 +20,8 @@
 #include "code_generation/TabelaSimbolos.hpp"
 
 typedef enum simbolos {
-    simb_program,
-    simb_label,
-    simb_type,
-    simb_array,
-    simb_of,
-    simb_var,
     simb_integer,
     simb_boolean,
-    simb_procedure,
-    simb_function,
-    simb_goto,
-    simb_if,
-    simb_then,
-    simb_else,
-    simb_while,
-    simb_do,
-    simb_or,
-    simb_div,
-    simb_mult,
-    simb_and,
-    simb_not,
-    simb_true,
-    simb_false,
-    simb_begin,
-    simb_end,
-    simb_read,
-    simb_write,
-    simb_atribuicao,
-    simb_ponto_e_virgula,
-    simb_dois_pontos,
-    simb_virgula,
-    simb_ponto,
-    simb_abre_parenteses,
-    simb_fecha_parenteses,
-    simb_mais,
-    simb_menos,
-    simb_diferenca,
-    simb_igualdade,
-    simb_menor_igual,
-    simb_maior_igual,
-    simb_maior,
-    simb_menor,
-
-    simb_numero,
-    simb_identificador,
 } simbolos;
 
 class Rotulos {
@@ -103,8 +60,11 @@ extern int nivel_lexico;
 extern int num_line;
 extern int num_amem;
 extern char num_params;
+extern bool pf_ref;
+extern bool chamada_proc;
+extern int idx_params;
 
-extern std::string addr_variavel;
+// extern std::string addr_variavel;
 
 extern bool print; /*helper*/
 
@@ -126,6 +86,9 @@ void novoSimbolo();  // declaraVar();
 
 void paramFormal();
 void fimParamFormal();
+int getLoadType(Simbolo* simbolo, Simbolo* procedure);
+void carregaValor(Simbolo* simbolo);
+void armazenaValor(Simbolo* simbolo);
 
 void beginProcedure();
 void endProcedure();
@@ -159,7 +122,6 @@ void operaTiposValidos(VariableType resultado);
 void operaTiposValidos();
 
 /* utils */
-std::string getAddrLex();
 
 void print_tipos();
 void error(const std::string& msg);

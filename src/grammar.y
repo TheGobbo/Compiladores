@@ -131,7 +131,7 @@ nparam_formais  : nparam_formais PONTO_E_VIRGULA sec_param_formais
 ;
 
 /* 15. */
-sec_param_formais : VAR lista_pf DOIS_PONTOS tipo { aplicarTipos(); }
+sec_param_formais : VAR {pf_ref=true;} lista_pf {pf_ref=false;} DOIS_PONTOS tipo { aplicarTipos(); }
                   |     lista_pf DOIS_PONTOS tipo { aplicarTipos(); }
                   /* | PROCEDURE lista_idents  */
                   /* /* | FUNCTION lista_idents DOIS_PONTOS IDENT */
@@ -189,9 +189,12 @@ atribuicao  : ATRIBUICAO { print_tipos(); } expr  {  }
 ;
 
 /* 20. */
-chamada_procedimento    : ABRE_PARENTESES lista_expr FECHA_PARENTESES
+chamada_procedimento    : ABRE_PARENTESES {chamada_proc = true; idx_params = 0;} lista_params FECHA_PARENTESES
                         | %empty
 ;
+
+lista_params    : lista_params VIRGULA {idx_params++;} expr
+                | expr
 
 // /* 21. */
 // desvio  : GOTO NUMERO
@@ -211,8 +214,8 @@ comando_repetitivo  : WHILE
 ;
 
 /* 24. */
-lista_expr  : lista_expr VIRGULA { } expr 
-            | expr
+/* lista_expr  : lista_expr VIRGULA expr 
+            | expr */
 ;
 
 /* 25. & 26. */

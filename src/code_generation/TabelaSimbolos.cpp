@@ -28,7 +28,8 @@ void TabelaSimbolos::setTipos(VariableType tipo) {
     }
     Simbolo* simb = nullptr;
 
-    for (auto it = this->tabelaDeSimbolos.rbegin(); it != this->tabelaDeSimbolos.rend(); ++it) {
+    for (auto it = this->tabelaDeSimbolos.rbegin(); it != this->tabelaDeSimbolos.rend();
+         ++it) {
         simb = (Simbolo*)*it;
         if (simb->getTipo() != UNDEFINED) {
             return;
@@ -45,7 +46,7 @@ int TabelaSimbolos::setParamFormal() {
     std::deque<Simbolo*>::reverse_iterator simb = this->tabelaDeSimbolos.rbegin();
     for (; (*simb)->getCategoria() != Category::PROCEDURE; ++simb) {
         (*simb)->setDeslocamento(deslocamento--);
-        infoProc.push_back(std::make_pair((*simb)->getTipo(), (*simb)->getPassage()));
+        infoProc.push_front(std::make_pair((*simb)->getTipo(), (*simb)->getPassage()));
     }
 
     int num_params = std::abs(deslocamento + 4);
@@ -83,30 +84,10 @@ void TabelaSimbolos::RemoveSimbolos(int quantidade_simbolos) {
     return;
 }
 
-// void TabelaSimbolos::RemoveProcedures(int nivel_lexico) {
-//     int proc_nl;
-//     int nl_proc;
-
-//     std::list<Simbolo*>::iterator it;
-//     for (it = this->tabelaDeSimbolos.begin(); it != this->tabelaDeSimbolos.end();) {
-//         if ((*it)->getCategoria() != Category::PROCEDURE) {
-//             ++it;
-//             continue;
-//         }
-
-//         proc_nl = (*it)->getNivelLexico();
-
-//         if (nivel_lexico <= proc_nl - 2) {
-//             this->tabelaDeSimbolos.erase(it++);
-//         } else {
-//             ++it;
-//         }
-//     }
-// }
-
 Simbolo* TabelaSimbolos::BuscarSimbolo(const std::string& identificador) {
     Simbolo* simb = nullptr;
-    for (auto it = this->tabelaDeSimbolos.rbegin(); it != this->tabelaDeSimbolos.rend(); ++it) {
+    for (auto it = this->tabelaDeSimbolos.rbegin(); it != this->tabelaDeSimbolos.rend();
+         ++it) {
         simb = (Simbolo*)*it;
         if (simb->getIdentificador() == identificador) {
             return simb;
@@ -119,7 +100,8 @@ Simbolo* TabelaSimbolos::getTopo() { return this->tabelaDeSimbolos.back(); }
 
 void TabelaSimbolos::show() {
     std::cout << "+ STACK TOP  +\n";
-    for (auto it = this->tabelaDeSimbolos.rbegin(); it != this->tabelaDeSimbolos.rend(); ++it) {
+    for (auto it = this->tabelaDeSimbolos.rbegin(); it != this->tabelaDeSimbolos.rend();
+         ++it) {
         std::cout << "| ";
         ((Simbolo*)*it)->show();
     }
