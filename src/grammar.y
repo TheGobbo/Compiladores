@@ -41,8 +41,8 @@
 %token INTEGER BOOLEAN TRUE FALSE 
 %token LABEL TYPE ARRAY OF GOTO ASTERISCO NOT 
 
-%nonassoc LOWER_THEN_ELSE
-%nonassoc ELSE
+%precedence LOWER_THEN_ELSE
+%precedence ELSE
 %%
 
 /* 1. */
