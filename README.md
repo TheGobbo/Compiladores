@@ -2,6 +2,13 @@
 
 This project provides a build system for compiling a Pascal-like language using the Flex and Bison tools. It generates a `compilador` executable that can parse and compile programs written in this language.
 
+## TO-DO
+- Atribuir tipo da função na tabela de simb para comparar com operações
+- Juntar lógica de procedimento e função em Subrotina, eh praticamente igual
+- Implementar verificação de N parametros_reais = N parametros_formais, verificando se é variavel ou cópia corretamente
+- Como permitir chamadas de subrotinas aninhadas sem resetar idx_param? f(f(3));
+- Fazer stress test semana 13
+
 ## Prerequisites
 
 Before using this Makefile, ensure that you have the following prerequisites installed on your system:

@@ -94,6 +94,10 @@ void beginProcedure();
 void endProcedure();
 void callProcedure();
 
+void beginFunction();
+void endFunction();
+void callFunction();
+
 void declaraIdentificador();  // salvarVarSimples();
 
 void Read();

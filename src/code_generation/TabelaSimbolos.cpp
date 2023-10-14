@@ -44,9 +44,13 @@ int TabelaSimbolos::setParamFormal() {
     ParamFormal infoProc;
 
     std::deque<Simbolo*>::reverse_iterator simb = this->tabelaDeSimbolos.rbegin();
-    for (; (*simb)->getCategoria() != Category::PROCEDURE; ++simb) {
+    for (; (*simb)->getCategoria() == Category::PARAMETRO_FORMAL; ++simb) {
         (*simb)->setDeslocamento(deslocamento--);
         infoProc.push_front(std::make_pair((*simb)->getTipo(), (*simb)->getPassage()));
+    }
+
+    if ((*simb)->getCategoria() == Category::FUNCTION) {
+        (*simb)->setDeslocamento(deslocamento);
     }
 
     int num_params = std::abs(deslocamento + 4);

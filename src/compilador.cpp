@@ -206,6 +206,7 @@ void novoSimbolo() {
 }
 
 /* DECLARA_PROCEDIMENTO */
+
 // declaracao de um novo procedimento
 void beginProcedure() {
     nivel_lexico++;
@@ -233,6 +234,52 @@ void callProcedure() {
         std::cerr << "nao achou procedure " << proc_tk << '\n';
         return;
     }
+
+    char rotulo = proc->getRotulo();
+    MEPA.write_code("CHPR " + stack_rotulos.transform(rotulo) + ", " +
+                    itoa(nivel_lexico));
+
+    // if (proc->getTamParams() != num_params) {
+    //     flags(std::to_string(proc->getTamParams());
+    //     flags(std::to_string(num_params);
+    //     error("Wrong number of parameters for function <" + proc_tk + ">");
+    // }
+
+    chamada_proc = false;
+}
+
+/* DECLARA_FUNCAO */
+void beginFunction() {
+    nivel_lexico++;
+
+    Simbolo* func{new Simbolo{meu_token, FUNCTION, nivel_lexico}};
+    func->setNumParams(0);
+    func->setRotulo(stack_rotulos.push().top());
+    TS.InsereSimbolo(func);
+
+    MEPA.write_rotulo(stack_rotulos.top(), "ENPR " + itoa(nivel_lexico));
+    stack_rotulos.pop();
+}
+
+void endFunction() {
+    MEPA.write_code("RTPR " + itoa(nivel_lexico, num_params));
+    nivel_lexico--;
+    num_params = 0;
+}
+void callFunction() {
+    Simbolo* proc = TS.BuscarSimbolo(proc_tk); /* GAMBI */
+
+    if (proc == nullptr || proc->getCategoria() != Category::FUNCTION) {
+        // std::cerr << "nao achou procedure " << proc_tk << '\n';
+        flags("&&&&&& Nao achou funcao <" + meu_token + ">");
+        return;
+    }
+
+    // if (proc->getTamParams() != num_params) {
+    //     flags(std::to_string(proc->getTamParams());
+    //     flags(std::to_string(num_params);
+    //     error("Wrong number of parameters for function <" + proc_tk + ">");
+    // }
 
     char rotulo = proc->getRotulo();
     MEPA.write_code("CHPR " + stack_rotulos.transform(rotulo) + ", " +
@@ -280,7 +327,8 @@ void declaraIdentificador() {
         last_simb = simbolo;
     }
 
-    if (simbolo->getCategoria() == Category::PROCEDURE) {
+    if (simbolo->getCategoria() == Category::PROCEDURE ||
+        simbolo->getCategoria() == FUNCTION) {
         proc_tk = meu_token; /* GAMBI */
         proc_atual = simbolo;
     }
@@ -385,30 +433,37 @@ void removeForaEscopo() {
 
 // escolhe operacao de carrecar simbolo na mepa
 void carregaValor(Simbolo* simbolo) {
+    if (simbolo->getCategoria() == FUNCTION) {
+        MEPA.write_code("AMEM 1");
+        return;
+    }
     int loadType = getLoadType(simbolo, proc_atual);
     switch (loadType) {
         case 1:
+            flags("CRVL : " + meu_token);
             MEPA.write_code("CRVL " + simbolo->getAddr());
             break;
         case 2:
+            flags("CRVI : " + meu_token);
             MEPA.write_code("CRVI " + simbolo->getAddr());
             break;
         case 3:
+            flags("CREN : " + meu_token);
             MEPA.write_code("CREN " + simbolo->getAddr());
             break;
     }
 }
 
-// define logica de como carregar simbolo
+// define logica de como carregar simbolo, subrotina = procedure;function;
 // 1 = CRVL ; 2 = CRVI ; 3 = CREN
-int getLoadType(Simbolo* simbolo, Simbolo* procedure) {
+int getLoadType(Simbolo* simbolo, Simbolo* subrotina) {
     PassageType ps_simbolo, ps_formal, by_ref, by_val;
 
     by_ref = PassageType::BY_REFERENCE;
     by_val = PassageType::BY_VALUE;
     ps_simbolo = simbolo->getPassage();
 
-    if (!chamada_proc || !procedure || procedure->getParams().size() == 0) {
+    if (!chamada_proc || !subrotina || subrotina->getParams().size() == 0) {
         return ps_simbolo == by_ref ? 2 : 1;
     }
 
@@ -435,9 +490,8 @@ int getLoadType(Simbolo* simbolo, Simbolo* procedure) {
 
 // decide entre ARMZ e ARMI para armazenar simbolo
 void armazenaValor(Simbolo* simbolo) {
-    flags(simbolo);
-    simbolo->show();
-    if (simbolo->getPassage() == PassageType::BY_VALUE) {
+    if (simbolo->getPassage() == PassageType::BY_VALUE ||
+        simbolo->getCategoria() == Category::FUNCTION) {
         flags("ARMZ!!!!!!");
         MEPA.write_code("ARMZ " + simbolo->getAddr());
     } else {

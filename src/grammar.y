@@ -34,11 +34,12 @@
 %token VIRGULA PONTO_E_VIRGULA DOIS_PONTOS PONTO
 %token T_BEGIN T_END VAR IDENT ATRIBUICAO
 
-%token LABEL TYPE ARRAY OF PROCEDURE FUNCTION 
-%token GOTO IF THEN ELSE WHILE DO OR AND NOT NUMERO
-%token MAIS MENOS ASTERISCO DIV MULT READ WRITE
+%token PROCEDURE FUNCTION 
+%token IF THEN ELSE WHILE DO OR AND NUMERO
+%token MAIS MENOS DIV MULT READ WRITE
 %token DIFERENCA MENOR MENOR_IGUAL MAIOR_IGUAL MAIOR IGUALDADE
 %token INTEGER BOOLEAN TRUE FALSE 
+%token LABEL TYPE ARRAY OF GOTO ASTERISCO NOT 
 
 %nonassoc LOWER_THEN_ELSE
 %nonassoc ELSE
@@ -72,12 +73,11 @@ bloco       :
 
 /* 8. */
 parte_declara_vars  : parte_declara_vars var
-                    | var
+                    | %empty
 ;
 
 /* 9. */
 var         : VAR declara_vars
-            | %empty
 ;
 
 /* 9. */
@@ -105,7 +105,7 @@ lista_idents: lista_idents VIRGULA IDENT
 
 /* 11. */
 parte_declara_subrot : parte_declara_subrot declara_procedimento PONTO_E_VIRGULA 
-                     /* | parte_declara_subrot declara_funcao PONTO_E_VIRGULA */
+                     | parte_declara_subrot declara_funcao PONTO_E_VIRGULA 
                      | %empty
 ;
 
@@ -115,11 +115,14 @@ declara_procedimento : PROCEDURE IDENT
                         param_formais PONTO_E_VIRGULA  bloco 
                     { endProcedure(); }
 ;
-// 
-// /* 13. */
-// declara_funcao    : FUNCTION IDENT param_formais PONTO_E_VIRGULA IDENT PONTO_E_VIRGULA bloco
-// ;
-// 
+
+/* 13. */
+declara_funcao      : FUNCTION IDENT 
+                    { beginFunction(); }
+                        param_formais DOIS_PONTOS tipo  PONTO_E_VIRGULA bloco
+                    { endFunction(); }
+;
+
 /* 14. */
 param_formais   : ABRE_PARENTESES nparam_formais FECHA_PARENTESES { fimParamFormal(); }
                 | %empty
@@ -132,9 +135,7 @@ nparam_formais  : nparam_formais PONTO_E_VIRGULA sec_param_formais
 
 /* 15. */
 sec_param_formais : VAR {pf_ref=true;} lista_pf {pf_ref=false;} DOIS_PONTOS tipo { aplicarTipos(); }
-                  |     lista_pf DOIS_PONTOS tipo { aplicarTipos(); }
-                  /* | PROCEDURE lista_idents  */
-                  /* /* | FUNCTION lista_idents DOIS_PONTOS IDENT */
+                  | lista_pf DOIS_PONTOS tipo { aplicarTipos(); }
 ;
 
 lista_pf    : lista_pf VIRGULA IDENT    { paramFormal(); }
@@ -157,13 +158,11 @@ comando     : NUMERO DOIS_PONTOS comando_sem_rotulo
 
 /* 18. */
 comando_sem_rotulo  : atribuicao_e_procedimento
-                    /* | chamada_procedimento */
                     | comando_composto
                     | comando_repetitivo
                     | comando_condicional   { endCondicional(); }
                     | READ  ABRE_PARENTESES lista_read FECHA_PARENTESES
                     | WRITE ABRE_PARENTESES lista_write FECHA_PARENTESES
-//                      | desvio 
 ;
 
 /* 18. + aula 10*/
@@ -183,7 +182,7 @@ lista_write : lista_write VIRGULA expr { Write(); }
             | expr                     { Write(); }
 ;
 
-// 
+
 // /* 19. */
 atribuicao  : ATRIBUICAO { print_tipos(); } expr  {  }
 ;
@@ -193,13 +192,14 @@ chamada_procedimento    : ABRE_PARENTESES {chamada_proc = true; idx_params = 0;}
                         | %empty
 ;
 
+/* 24. lista_expr */
 lista_params    : lista_params VIRGULA {idx_params++;} expr
                 | expr
 
 // /* 21. */
 // desvio  : GOTO NUMERO
 // ;
-// 
+
 // /* 22. */
 comando_condicional  : if_then  %prec LOWER_THEN_ELSE
                      | if_then ELSE { elseCondicional(); } comando_sem_rotulo
@@ -213,11 +213,6 @@ comando_repetitivo  : WHILE
                 { endWhile(); }
 ;
 
-/* 24. */
-/* lista_expr  : lista_expr VIRGULA expr 
-            | expr */
-;
-
 /* 25. & 26. */
 expr        : expr_simples 
             | expr_simples MENOR       expr_simples { aplicarOperacao("CMME", BOOLEANO); }
@@ -229,11 +224,6 @@ expr        : expr_simples
 ;
 
 /* 27. */
-// expr_simples: opt_sinal conteudo 
-// ;
-// /* 27. */
-// opt_sinal   : MAIS | MENOS | /* vazio */;
-// conteudo    : conteudo oper | termo ;
 expr_simples: expr_simples MAIS  termo { aplicarOperacao("SOMA", INTEIRO); }
             | expr_simples MENOS termo { aplicarOperacao("SUBT", INTEIRO); }
             | expr_simples OR    termo { aplicarOperacao("DISJ", BOOLEANO); }
@@ -248,23 +238,25 @@ termo       : termo MULT fator { aplicarOperacao("MULT", INTEIRO); }
 ;
 
 /* 29. */
-fator   : variavel 
+fator   : variavel_funcao
         | TRUE      { loadConstante("true"); }
         | FALSE     { loadConstante("false"); }
         | NUMERO    { loadConstante(std::string(meu_token)); }
         | ABRE_PARENTESES expr FECHA_PARENTESES
         /* | NOT fator  */
-        /* | chamada_funcao */
 ;
 
-/* 30. */   /* ERRO se != VS, PF ou Func */
-variavel    : IDENT { saveVariavel(); }
-            /* | IDENT lista_expr */
+/* 30. */  
+variavel_funcao : IDENT { saveVariavel(); } funcao_nada;
+
+funcao_nada : chamada_funcao { callFunction(); }
+            | %empty 
 ;
-// /* 31. */
-// chamada_funcao : chamada_funcao ABRE_PARENTESES lista_expr FECHA_PARENTESES 
-//                | IDENT
-// ;
+
+/* 31. */
+chamada_funcao : ABRE_PARENTESES {chamada_proc = true; idx_params = 0;} lista_params FECHA_PARENTESES 
+               /* | ABRE_PARENTESES {chamada_proc = true; idx_params = 0;} FECHA_PARENTESES */ // f(f(x)) reseta idx_param;
+;
 
 %%
  

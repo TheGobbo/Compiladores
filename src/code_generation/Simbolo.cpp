@@ -84,7 +84,8 @@ char Simbolo::getRotulo() const { return this->rotulo; }
 
 void Simbolo::show() {
     // Map enums to strings
-    const char* categoryNames[] = {"VARIAVEL_SIMPLES", "PARAMETRO_FORMAL", "PROCEDURE"};
+    const char* categoryNames[] = {"VARIAVEL_SIMPLES", "PARAMETRO_FORMAL", "PROCEDURE",
+                                   "FUNCTION"};
     const char* variableTypeNames[] = {"INTEIRO", "BOOLEANO", "UNDEFINED"};
     const char* passageTypeNames[] = {"BY_VALUE", "BY_REFERENCE", "BY_UNDEFINED"};
 
@@ -97,6 +98,10 @@ void Simbolo::show() {
         std::cout << "pass[" << passageTypeNames[this->passagem] << "]\n";
     } else {
         std::cout << "Rotulo[" << (int)this->rotulo << "] ";
+        if (this->categoria == FUNCTION) {
+            std::cout << "desl[" << this->deslocamento << "] ";
+            std::cout << "tipo[" << variableTypeNames[this->tipo] << "] ";
+        }
         std::cout << "N_Params[" << this->num_params << "] ";
         std::cout << "PARAMS: [";
         ParamFormal::iterator it;

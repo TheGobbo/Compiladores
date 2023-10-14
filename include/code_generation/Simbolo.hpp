@@ -4,7 +4,7 @@
 #include <deque>
 #include <string>
 
-typedef enum { VARIAVEL_SIMPLES, PARAMETRO_FORMAL, PROCEDURE } Category;
+typedef enum { VARIAVEL_SIMPLES, PARAMETRO_FORMAL, PROCEDURE, FUNCTION } Category;
 typedef enum { INTEIRO, BOOLEANO, UNDEFINED } VariableType;
 typedef enum {
     BY_VALUE,
