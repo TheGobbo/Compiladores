@@ -48,9 +48,10 @@ int num_line = 1;
 int num_amem = 0;
 char num_params = 0;
 bool pf_ref = false;
-bool chamada_proc = false;
+int chamada_proc = 0;
 int idx_params = 0;
-Simbolo* proc_atual = nullptr;
+std::deque<int> idxs_params;
+std::deque<Simbolo*> stack_subrots;
 
 bool print = false;
 
@@ -128,7 +129,8 @@ void Rotulos::show() {
     std::cerr << RED << "STACK_ROTULOS, nivel lexico : " << itoa(nivel_lexico)
               << std::endl;
     std::deque<char>::iterator it;
-    for (it = this->stack_rotulos.begin(); it != this->stack_rotulos.end(); ++it) {
+    for (it = this->stack_rotulos.begin(); it != this->stack_rotulos.end();
+         ++it) {
         std::cerr << ">>>>>>> R00" << (int)(*it) << std::endl;
     }
     std::cerr << "STACK_ROTULOS BACK\n" << NC << std::endl;
@@ -170,6 +172,12 @@ void varsDeclarado() {
 void subrotDeclarado() {
     MEPA.write_rotulo(stack_rotulos.top(), "NADA");
     stack_rotulos.pop();
+}
+
+void subrotInicio() {
+    chamada_proc++;
+    idxs_params.push_back(idx_params);
+    idx_params = 0;
 }
 
 // remove simbolos fora do escopo, libera memoria destes simbolos
@@ -245,7 +253,10 @@ void callProcedure() {
     //     error("Wrong number of parameters for function <" + proc_tk + ">");
     // }
 
-    chamada_proc = false;
+    chamada_proc--;
+    if (!stack_subrots.empty()) {
+        stack_subrots.pop_back();
+    }
 }
 
 /* DECLARA_FUNCAO */
@@ -285,7 +296,10 @@ void callFunction() {
     MEPA.write_code("CHPR " + stack_rotulos.transform(rotulo) + ", " +
                     itoa(nivel_lexico));
 
-    chamada_proc = false;
+    chamada_proc--;
+    if (!stack_subrots.empty()) {
+        stack_subrots.pop_back();
+    }
 }
 
 /* PARAMETROS FORMAIS */
@@ -330,7 +344,6 @@ void declaraIdentificador() {
     if (simbolo->getCategoria() == Category::PROCEDURE ||
         simbolo->getCategoria() == FUNCTION) {
         proc_tk = meu_token; /* GAMBI */
-        proc_atual = simbolo;
     }
 }
 
@@ -397,9 +410,14 @@ void aplicarOperacao(const std::string& command, VariableType resultado) {
 // Encontra simbolo do token corrente e carrega seu valor na mepa
 void saveVariavel() {
     Simbolo* simbolo = TS.BuscarSimbolo(meu_token);
-    if (simbolo == nullptr) error("variable not found (" + std::string(meu_token) + ")");
+    if (simbolo == nullptr)
+        error("variable not found (" + std::string(meu_token) + ")");
     if (simbolo->getCategoria() != Category::PROCEDURE) {
         stack_tipos.push_back(simbolo->getTipo());
+    }
+    if (simbolo->getCategoria() == Category::PROCEDURE ||
+        simbolo->getCategoria() == Category::FUNCTION) {
+        stack_subrots.push_back(simbolo);
     }
 
     carregaValor(simbolo);
@@ -437,7 +455,9 @@ void carregaValor(Simbolo* simbolo) {
         MEPA.write_code("AMEM 1");
         return;
     }
-    int loadType = getLoadType(simbolo, proc_atual);
+
+    Simbolo* subrot = stack_subrots.empty() ? nullptr : stack_subrots.back();
+    int loadType = getLoadType(simbolo, subrot);
     switch (loadType) {
         case 1:
             flags("CRVL : " + meu_token);
@@ -461,14 +481,14 @@ int getLoadType(Simbolo* simbolo, Simbolo* subrotina) {
 
     by_ref = PassageType::BY_REFERENCE;
     by_val = PassageType::BY_VALUE;
-    ps_simbolo = simbolo->getPassage();
 
-    if (!chamada_proc || !subrotina || subrotina->getParams().size() == 0) {
+    ps_simbolo = simbolo->getPassage();
+    std::cout << subrotina << '\n';
+    if (chamada_proc <= 0 || !subrotina || subrotina->getParams().size() == 0) {
         return ps_simbolo == by_ref ? 2 : 1;
     }
 
-    ps_formal = proc_atual->getParams().at(idx_params).second;
-
+    ps_formal = subrotina->getParams().at(idx_params).second;
     // addr & addr ; val & val ;
     if (ps_formal == ps_simbolo) {
         return 1;  // CRVL

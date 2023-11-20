@@ -67,6 +67,13 @@ To remove all generated files, including the compiled `compilador` executable, u
 make clear
 ```
 
+To execute the MEPA interpreter you can use 
+```
+./executaMepa -r -i output/output.mepa
+```
+
+or download the full interpreter here : https://www.inf.ufpr.br/bmuller/assets/ci1211/Recursos/InterprMEPA-2.0.tar.bz2
+
 # Project Directory Structure
 
 

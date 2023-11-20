@@ -32,7 +32,7 @@ run: all
 # ./compilador < tests/input/aula11_stress.pas
 # ./compilador < tests/input/aula12_var.pas
 # ./compilador < tests/input/aula13_func.pas
-	./compilador < tests/input/test.pas
+	./compilador < tests/input/tests.pas
 
 # Run tests
 test: all

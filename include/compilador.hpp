@@ -61,8 +61,10 @@ extern int num_line;
 extern int num_amem;
 extern char num_params;
 extern bool pf_ref;
-extern bool chamada_proc;
+extern int chamada_proc;
 extern int idx_params;
+extern std::deque<int> idxs_params;
+extern std::deque<Simbolo*> stack_subrots;
 
 // extern std::string addr_variavel;
 
@@ -79,6 +81,7 @@ void saveSimbolo();
 
 void varsDeclarado();
 void subrotDeclarado();
+void subrotInicio();
 void endComandos();
 
 void aplicarTipos();

@@ -188,7 +188,7 @@ atribuicao  : ATRIBUICAO { print_tipos(); } expr  {  }
 ;
 
 /* 20. */
-chamada_procedimento    : ABRE_PARENTESES {chamada_proc = true; idx_params = 0;} lista_params FECHA_PARENTESES
+chamada_procedimento    : ABRE_PARENTESES {subrotInicio(); } lista_params {idx_params = idxs_params.back(); idxs_params.pop_back();} FECHA_PARENTESES
                         | %empty
 ;
 
@@ -254,7 +254,7 @@ funcao_nada : chamada_funcao { callFunction(); }
 ;
 
 /* 31. */
-chamada_funcao : ABRE_PARENTESES {chamada_proc = true; idx_params = 0;} lista_params FECHA_PARENTESES 
+chamada_funcao : ABRE_PARENTESES { subrotInicio(); } lista_params {idx_params = idxs_params.back(); idxs_params.pop_back();} FECHA_PARENTESES
                /* | ABRE_PARENTESES {chamada_proc = true; idx_params = 0;} FECHA_PARENTESES */ // f(f(x)) reseta idx_param;
 ;
 
