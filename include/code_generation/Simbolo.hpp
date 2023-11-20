@@ -4,8 +4,14 @@
 #include <deque>
 #include <string>
 
-typedef enum { VARIAVEL_SIMPLES, PARAMETRO_FORMAL, PROCEDURE, FUNCTION } Category;
 typedef enum { INTEIRO, BOOLEANO, UNDEFINED } VariableType;
+typedef enum {
+    VARIAVEL_SIMPLES,
+    PARAMETRO_FORMAL,
+    PROCEDURE,
+    FUNCTION,
+    CTE
+} Category;
 typedef enum {
     BY_VALUE,
     BY_REFERENCE,
@@ -41,6 +47,9 @@ class Simbolo {
 
     // cout << Simbolo
     void show();
+    static std::string showVariable(VariableType tipo);
+    static std::string showPassage(PassageType tipo);
+    static std::string showCategory(Category tipo);
 
    private:
     std::string identificador;

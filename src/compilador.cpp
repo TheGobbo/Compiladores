@@ -50,8 +50,10 @@ char num_params = 0;
 bool pf_ref = false;
 int chamada_proc = 0;
 int idx_params = 0;
+int penult_idx = 0; /*GAMBI*/
 std::deque<int> idxs_params;
 std::deque<Simbolo*> stack_subrots;
+std::deque<std::pair<Category, VariableType>> stack_param;
 
 bool print = false;
 
@@ -129,8 +131,7 @@ void Rotulos::show() {
     std::cerr << RED << "STACK_ROTULOS, nivel lexico : " << itoa(nivel_lexico)
               << std::endl;
     std::deque<char>::iterator it;
-    for (it = this->stack_rotulos.begin(); it != this->stack_rotulos.end();
-         ++it) {
+    for (it = this->stack_rotulos.begin(); it != this->stack_rotulos.end(); ++it) {
         std::cerr << ">>>>>>> R00" << (int)(*it) << std::endl;
     }
     std::cerr << "STACK_ROTULOS BACK\n" << NC << std::endl;
@@ -174,10 +175,16 @@ void subrotDeclarado() {
     stack_rotulos.pop();
 }
 
-void subrotInicio() {
+void inicioParams() {
     chamada_proc++;
     idxs_params.push_back(idx_params);
     idx_params = 0;
+}
+
+void fimParams() {
+    penult_idx = idx_params;
+    idx_params = idxs_params.back();
+    idxs_params.pop_back();
 }
 
 // remove simbolos fora do escopo, libera memoria destes simbolos
@@ -247,12 +254,9 @@ void callProcedure() {
     MEPA.write_code("CHPR " + stack_rotulos.transform(rotulo) + ", " +
                     itoa(nivel_lexico));
 
-    // if (proc->getTamParams() != num_params) {
-    //     flags(std::to_string(proc->getTamParams());
-    //     flags(std::to_string(num_params);
-    //     error("Wrong number of parameters for function <" + proc_tk + ">");
-    // }
+    validadeSignature(proc);
 
+    // salva subrotina atual em f(f(n))
     chamada_proc--;
     if (!stack_subrots.empty()) {
         stack_subrots.pop_back();
@@ -286,20 +290,65 @@ void callFunction() {
         return;
     }
 
-    // if (proc->getTamParams() != num_params) {
-    //     flags(std::to_string(proc->getTamParams());
-    //     flags(std::to_string(num_params);
-    //     error("Wrong number of parameters for function <" + proc_tk + ">");
-    // }
+    validadeSignature(proc);
 
     char rotulo = proc->getRotulo();
     MEPA.write_code("CHPR " + stack_rotulos.transform(rotulo) + ", " +
                     itoa(nivel_lexico));
 
+    // salva subrotina atual em f(f(n))
     chamada_proc--;
     if (!stack_subrots.empty()) {
         stack_subrots.pop_back();
     }
+}
+
+void validadeSignature(Simbolo* subrot) {
+    if (subrot->getCategoria() != Category::PROCEDURE &&
+        subrot->getCategoria() != FUNCTION) {
+        return;
+    }
+
+    int expected_size = subrot->getParams().size();
+    int received_size = penult_idx + 1;
+
+    if (received_size != expected_size) {
+        error("Wrong number of parameters for function <" +
+              subrot->getIdentificador() + "> expected " +
+              std::to_string(expected_size) + " but got " +
+              std::to_string(received_size));
+    }
+
+    ParamFormal::const_reverse_iterator param = subrot->getParams().crbegin();
+
+    int idx = subrot->getTamParams();
+    for (param; param != subrot->getParams().crend(); ++param, --idx) {
+        VariableType expect_vartype = (*param).first;
+        VariableType got_vartype = stack_param.back().second;
+
+        PassageType expect_passtype = (*param).second;
+        Category got_category = stack_param.back().first;
+
+        stack_param.pop_back();
+
+        if (expect_vartype != got_vartype) {
+            error("Wrong Variable Type in " + std::to_string(idx) +
+                  "° parameter for function <" + subrot->getIdentificador() +
+                  "> expected " + Simbolo::showVariable(expect_vartype) +
+                  " but got " + Simbolo::showVariable(got_vartype));
+        }
+
+        // var soh aceita VS
+        if (expect_passtype == PassageType::BY_REFERENCE &&
+            got_category != Category::VARIAVEL_SIMPLES) {
+            error("Wrong Passage Type in " + std::to_string(idx) +
+                  "° parameter for function <" + subrot->getIdentificador() +
+                  "> expected " + Simbolo::showPassage(expect_passtype) +
+                  " but got " + Simbolo::showCategory(got_category));
+        }
+    }
+
+    return;
 }
 
 /* PARAMETROS FORMAIS */
@@ -433,6 +482,10 @@ void loadConstante(std::string valor) {
         MEPA.write_code("CRCT " + valor);
         stack_tipos.push_back(VariableType::INTEIRO);
     }
+
+    if (!stack_subrots.empty()) {
+        stack_param.push_back(std::make_pair(Category::CTE, stack_tipos.back()));
+    }
 }
 
 // remove da tabela de simbolos os simbolos fora do escopo atual em t_compilacao
@@ -482,13 +535,24 @@ int getLoadType(Simbolo* simbolo, Simbolo* subrotina) {
     by_ref = PassageType::BY_REFERENCE;
     by_val = PassageType::BY_VALUE;
 
+    stack_param.push_back(
+        std::make_pair(simbolo->getCategoria(), simbolo->getTipo()));
+
     ps_simbolo = simbolo->getPassage();
-    std::cout << subrotina << '\n';
     if (chamada_proc <= 0 || !subrotina || subrotina->getParams().size() == 0) {
         return ps_simbolo == by_ref ? 2 : 1;
     }
 
+    int tam_params = subrotina->getTamParams();
+    if (subrotina->getTamParams() <= idx_params) {
+        error("Wrong number of parameters for function <" +
+              subrotina->getIdentificador() + "> expected " +
+              std::to_string(tam_params) + " but got " +
+              std::to_string(idx_params + 1));
+    }
+
     ps_formal = subrotina->getParams().at(idx_params).second;
+
     // addr & addr ; val & val ;
     if (ps_formal == ps_simbolo) {
         return 1;  // CRVL

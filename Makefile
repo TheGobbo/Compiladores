@@ -34,6 +34,9 @@ run: all
 # ./compilador < tests/input/aula13_func.pas
 	./compilador < tests/input/tests.pas
 
+mepa: 
+	./executaMepa -r -i output/output.mepa
+
 # Run tests
 test: all
 	./tests/run_tests.sh

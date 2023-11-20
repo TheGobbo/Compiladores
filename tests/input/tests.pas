@@ -1,20 +1,15 @@
 program funcao (input, output);
-var m : integer;
-function f(n: integer; var k : integer): integer;
-// function f(n: integer; a: integer; var k : integer): integer;
+var x : integer;
+function f(a : integer; var b: integer) : integer;
 begin
-//    a := 1;
-   n := n + 1;
-   k := k + n;
-   write(n, m);
-   f := n;
+   x := a + b;
+   b := a + 1;
+   write(a, b);
+   f := x;
 end;
 
 begin
-    m := 0;
-    // write(f(1, f(1, 0, m), m));
-   write(f(f(f(1, m), m), m));
-//    write(f(m, f(m, f(m, 3))));
-    // m := 0;
-   write(m);
+   x := 1;
+   write(f(f(f(f(1, x), x), x), 1));
+   write(x);
 end.

@@ -65,6 +65,7 @@ extern int chamada_proc;
 extern int idx_params;
 extern std::deque<int> idxs_params;
 extern std::deque<Simbolo*> stack_subrots;
+extern std::deque<std::pair<Category, VariableType>> stack_param;
 
 // extern std::string addr_variavel;
 
@@ -81,7 +82,6 @@ void saveSimbolo();
 
 void varsDeclarado();
 void subrotDeclarado();
-void subrotInicio();
 void endComandos();
 
 void aplicarTipos();
@@ -100,6 +100,11 @@ void callProcedure();
 void beginFunction();
 void endFunction();
 void callFunction();
+
+void inicioParams();
+void fimParams();
+
+void validadeSignature(Simbolo* subrot);
 
 void declaraIdentificador();  // salvarVarSimples();
 

@@ -6,8 +6,11 @@
 /* BUILDER SETTERS */
 
 // Constructor for Builder
-Simbolo::Simbolo(const std::string& identificador, Category categoria, int nivel_lexico)
-    : identificador{identificador}, categoria{categoria}, nivel_lexico{nivel_lexico} {
+Simbolo::Simbolo(const std::string& identificador, Category categoria,
+                 int nivel_lexico)
+    : identificador{identificador},
+      categoria{categoria},
+      nivel_lexico{nivel_lexico} {
     // Other attributes depending on the category
     this->passagem = PassageType::BY_UNDEFINED;
     this->tipo = VariableType::UNDEFINED;
@@ -65,7 +68,8 @@ std::string Simbolo::getAddr() const {
         std::exit(-1);
     }
 
-    return std::to_string(this->nivel_lexico) + ", " + std::to_string(this->deslocamento);
+    return std::to_string(this->nivel_lexico) + ", " +
+           std::to_string(this->deslocamento);
 }
 
 Category Simbolo::getCategoria() const { return this->categoria; }
@@ -82,32 +86,48 @@ int Simbolo::getTamParams() const { return this->params.size(); }
 
 char Simbolo::getRotulo() const { return this->rotulo; }
 
+std::string Simbolo::showVariable(VariableType tipo) {
+    const std::string variableTypeNames[] = {"INTEIRO", "BOOLEANO", "UNDEFINED"};
+    return variableTypeNames[tipo];
+}
+
+std::string Simbolo::showPassage(PassageType tipo) {
+    const std::string passageTypeNames[] = {"BY_VALUE", "BY_REFERENCE",
+                                            "BY_UNDEFINED"};
+    return passageTypeNames[tipo];
+}
+
+std::string Simbolo::showCategory(Category tipo) {
+    const std::string categoryNames[] = {"VARIAVEL_SIMPLES", "PARAMETRO_FORMAL",
+                                         "PROCEDURE", "FUNCTION", "CTE"};
+
+    return categoryNames[tipo];
+}
+
 void Simbolo::show() {
     // Map enums to strings
-    const char* categoryNames[] = {"VARIAVEL_SIMPLES", "PARAMETRO_FORMAL", "PROCEDURE",
-                                   "FUNCTION"};
-    const char* variableTypeNames[] = {"INTEIRO", "BOOLEANO", "UNDEFINED"};
-    const char* passageTypeNames[] = {"BY_VALUE", "BY_REFERENCE", "BY_UNDEFINED"};
+    const char* categoryNames[] = {"VARIAVEL_SIMPLES", "PARAMETRO_FORMAL",
+                                   "PROCEDURE", "FUNCTION"};
 
     std::cout << "identificador[" << this->identificador << "] ";
     std::cout << "categoria[" << categoryNames[this->categoria] << "] ";
     std::cout << "nivel_lexico[" << this->nivel_lexico << "] ";
     if (this->categoria == VARIAVEL_SIMPLES || this->categoria == PARAMETRO_FORMAL) {
         std::cout << "desl[" << this->deslocamento << "] ";
-        std::cout << "tipo[" << variableTypeNames[this->tipo] << "] ";
-        std::cout << "pass[" << passageTypeNames[this->passagem] << "]\n";
+        std::cout << "tipo[" << showVariable(this->tipo) << "] ";
+        std::cout << "pass[" << showPassage(this->passagem) << "]\n";
     } else {
         std::cout << "Rotulo[" << (int)this->rotulo << "] ";
         if (this->categoria == FUNCTION) {
             std::cout << "desl[" << this->deslocamento << "] ";
-            std::cout << "tipo[" << variableTypeNames[this->tipo] << "] ";
+            std::cout << "tipo[" << showVariable(this->tipo) << "] ";
         }
         std::cout << "N_Params[" << this->num_params << "] ";
         std::cout << "PARAMS: [";
         ParamFormal::iterator it;
         for (it = this->params.begin(); it != this->params.end(); ++it) {
-            std::cout << " (" << variableTypeNames[(*it).first] << ", ";
-            std::cout << passageTypeNames[(*it).second] << ")";
+            std::cout << " (" << showVariable((*it).first) << ", ";
+            std::cout << showPassage((*it).second) << ")";
         }
         std::cout << "]\n";
     }
