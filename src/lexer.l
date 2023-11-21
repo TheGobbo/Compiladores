@@ -7,9 +7,9 @@
 
 using namespace bison;
 
-#define PADD std::left << std::setw(16) << std::setfill(' ')
-#define IMPRIME(STR) if(print) { std::cerr << PADD << STR << "\t# " << PADD << meu_token << num_line << '\n' ;}
-// #define IMPRIME(STR) {};
+// #define PADD std::left << std::setw(16) << std::setfill(' ')
+// #define IMPRIME(STR) if(print) { std::cerr << PADD << STR << "\t# " << PADD << meu_token << num_line << '\n' ;}
+#define IMPRIME(STR) {};
 
 %}
 

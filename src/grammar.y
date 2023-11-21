@@ -184,7 +184,7 @@ lista_write : lista_write VIRGULA expr { Write(); }
 
 
 // /* 19. */
-atribuicao  : ATRIBUICAO { print_tipos(); } expr  {  }
+atribuicao  : ATRIBUICAO { /*print_tipos();*/ } expr  {  }
 ;
 
 /* 20. */
@@ -203,7 +203,7 @@ lista_params    : lista_params VIRGULA expr { idx_params++; }
 comando_condicional  : if_then  %prec LOWER_THEN_ELSE
                      | if_then ELSE { elseCondicional(); } comando_sem_rotulo
 ;
-if_then             : IF expr { beginCondicional(); } THEN comando_sem_rotulo
+if_then             : IF expr { validateIf(); } { beginCondicional(); } THEN comando_sem_rotulo
 // 
 // /* 23. */
 comando_repetitivo  : WHILE 

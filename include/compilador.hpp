@@ -116,6 +116,7 @@ void aplicaAtribuicao();
 void endCondicional();
 void beginCondicional();
 void elseCondicional();
+void validateIf();
 
 void beginWhile();
 void endWhile();

@@ -22,14 +22,16 @@
 #define RED "\033[1;31m"
 #define NC "\033[0m"  // No color
 
-#define flags(STR) std::cerr << RED << STR << NC << std::endl
-#define print(STR) std::cerr << GREEN << STR << NC << std::endl
+#define flags(STR)
+#define print(STR)
+// #define print(STR) std::cerr << GREEN << STR << NC << std::endl
+// #define print(STR) std::cerr << GREEN << STR << NC << std::endl
 
 /* -------------------------------------------------------------------
  *  variáveis globais
  * ------------------------------------------------------------------- */
 
-MepaInterface MEPA("output/output.mepa");
+MepaInterface MEPA("MEPA");
 
 std::deque<VariableType> stack_tipos;
 std::deque<int> stack_mem;
@@ -149,8 +151,8 @@ void endCompilador() {
     print("endCompilador");
     MEPA.write_code("PARA");
     TS.clear();
-    TS.show();
-    stack_rotulos.show();
+    // TS.show();
+    // stack_rotulos.show();
 }
 
 /* BLOCO */
@@ -206,7 +208,7 @@ void aplicarTipos() {
     }
 
     TS.setTipos(tipo);
-    TS.show();
+    // TS.show();
 }
 
 // declaracao de um novo simbolo
@@ -269,7 +271,7 @@ void callProcedure() {
 void beginFunction() {
     nivel_lexico++;
 
-    TS.show();
+    // TS.show();
     Simbolo* func{new Simbolo{meu_token, FUNCTION, nivel_lexico}};
     func->setNumParams(0);
     func->setRotulo(stack_rotulos.push().top());
@@ -375,7 +377,7 @@ void paramFormal() {
 // configura infos dos params formais
 void fimParamFormal() {
     num_params = TS.setParamFormal();
-    TS.show();
+    // TS.show();
 }
 
 /* ATRIBUICAO */
@@ -431,6 +433,12 @@ void elseCondicional() {
     stack_rotulos.push(topo);
 
     MEPA.write_rotulo(subtop, "NADA");
+}
+
+void validateIf() {
+    if (stack_tipos.back() != VariableType::BOOLEANO) {
+        error("Conditional statement expected boolean result");
+    }
 }
 
 /* WHILE */
@@ -496,7 +504,7 @@ void removeForaEscopo() {
         TS.RemoveSimbolos(1);
     }
 
-    TS.show();
+    // TS.show();
 }
 
 /* -------------------------------------------------------------------
@@ -577,7 +585,7 @@ int getLoadType(Simbolo* simbolo, Simbolo* subrotina) {
 
 // decide entre ARMZ e ARMI para armazenar simbolo
 void armazenaValor(Simbolo* simbolo) {
-    TS.show();
+    // TS.show();
 
     if (simbolo->getPassage() == PassageType::BY_VALUE ||
         simbolo->getCategoria() == Category::FUNCTION) {
@@ -592,7 +600,7 @@ void armazenaValor(Simbolo* simbolo) {
 // valida operacao de tipos, nao adiciona nada na stack de tipos
 void operaTiposValidos() {
     VariableType l, r;
-    print_tipos();
+    // print_tipos();
     l = stack_tipos.back();
     stack_tipos.pop_back();
 
@@ -608,7 +616,7 @@ void operaTiposValidos() {
 void operaTiposValidos(VariableType resultado) {
     operaTiposValidos();
     stack_tipos.push_back(resultado);
-    print_tipos();
+    // print_tipos();
 }
 
 // espelho de bison::Parse::error

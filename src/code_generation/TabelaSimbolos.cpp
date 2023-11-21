@@ -73,16 +73,16 @@ void TabelaSimbolos::InsereSimbolo(Simbolo* simbolo) {
         return;
     }
 
-    std::cout << "Inserindo : ";
-    simbolo->show();
+    // std::cout << "Inserindo : ";
+    // simbolo->show();
     this->tabelaDeSimbolos.push_back(simbolo);
     this->quantidade_simbolos++;
 }
 
 void TabelaSimbolos::RemoveSimbolos(int quantidade_simbolos) {
     while (quantidade_simbolos > 0 && !this->tabelaDeSimbolos.empty()) {
-        std::cerr << "Removendo : ";
-        ((Simbolo*)this->tabelaDeSimbolos.back())->show();
+        // std::cerr << "Removendo : ";
+        // ((Simbolo*)this->tabelaDeSimbolos.back())->show();
         this->tabelaDeSimbolos.pop_back();
         this->quantidade_simbolos--;
         quantidade_simbolos--;
@@ -110,9 +110,9 @@ Simbolo* TabelaSimbolos::BuscarSimbolo(const std::string& identificador) {
             // !func !proc -> vs pf
             // nl desse simb > nivel lexico atual
             // ignore
-            std::cout << "SKIPPED : " << simb->getIdentificador() << " "
-                      << simb->getNivelLexico() << " > " << nivel_lexico << " && "
-                      << Simbolo::showCategory(simb->getCategoria()) << '\n';
+            // std::cout << "SKIPPED : " << simb->getIdentificador() << " "
+            //           << simb->getNivelLexico() << " > " << nivel_lexico << " && "
+            //           << Simbolo::showCategory(simb->getCategoria()) << '\n';
             continue;
         }
 
