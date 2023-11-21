@@ -176,7 +176,6 @@ void subrotDeclarado() {
 
 void inicioParams() {
     chamada_proc++;
-    flags("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA" << chamada_proc);
     idxs_params.push_back(idx_params);
     idx_params = 0;
 }
@@ -207,6 +206,7 @@ void aplicarTipos() {
     }
 
     TS.setTipos(tipo);
+    TS.show();
 }
 
 // declaracao de um novo simbolo
@@ -269,6 +269,7 @@ void callProcedure() {
 void beginFunction() {
     nivel_lexico++;
 
+    TS.show();
     Simbolo* func{new Simbolo{meu_token, FUNCTION, nivel_lexico}};
     func->setNumParams(0);
     func->setRotulo(stack_rotulos.push().top());
@@ -494,6 +495,8 @@ void removeForaEscopo() {
     while (!TS.empty() && TS.getTopo()->getNivelLexico() - 1 >= nivel_lexico) {
         TS.RemoveSimbolos(1);
     }
+
+    TS.show();
 }
 
 /* -------------------------------------------------------------------
@@ -512,7 +515,8 @@ void carregaValor(Simbolo* simbolo) {
     int loadType = getLoadType(simbolo, subrot);
     switch (loadType) {
         case 1:
-            flags("CRVL : " + meu_token);
+            flags("CRVL : " << meu_token << " " << simbolo->getAddr()
+                            << " meu nl : " << nivel_lexico);
             MEPA.write_code("CRVL " + simbolo->getAddr());
             break;
         case 2:
@@ -573,6 +577,8 @@ int getLoadType(Simbolo* simbolo, Simbolo* subrotina) {
 
 // decide entre ARMZ e ARMI para armazenar simbolo
 void armazenaValor(Simbolo* simbolo) {
+    TS.show();
+
     if (simbolo->getPassage() == PassageType::BY_VALUE ||
         simbolo->getCategoria() == Category::FUNCTION) {
         flags("ARMZ!!!!!!");

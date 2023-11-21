@@ -4,6 +4,7 @@
 #include <iostream>
 
 #include "code_generation/Simbolo.hpp"
+#include "compilador.hpp"
 
 TabelaSimbolos::TabelaSimbolos() {}
 
@@ -28,8 +29,8 @@ void TabelaSimbolos::setTipos(VariableType tipo) {
     }
     Simbolo* simb = nullptr;
 
-    for (auto it = this->tabelaDeSimbolos.rbegin(); it != this->tabelaDeSimbolos.rend();
-         ++it) {
+    for (auto it = this->tabelaDeSimbolos.rbegin();
+         it != this->tabelaDeSimbolos.rend(); ++it) {
         simb = (Simbolo*)*it;
         if (simb->getTipo() != UNDEFINED) {
             return;
@@ -46,7 +47,8 @@ int TabelaSimbolos::setParamFormal() {
     std::deque<Simbolo*>::reverse_iterator simb = this->tabelaDeSimbolos.rbegin();
     for (; (*simb)->getCategoria() == Category::PARAMETRO_FORMAL; ++simb) {
         (*simb)->setDeslocamento(deslocamento--);
-        infoProc.push_front(std::make_pair((*simb)->getTipo(), (*simb)->getPassage()));
+        infoProc.push_front(
+            std::make_pair((*simb)->getTipo(), (*simb)->getPassage()));
     }
 
     if ((*simb)->getCategoria() == Category::FUNCTION) {
@@ -90,12 +92,34 @@ void TabelaSimbolos::RemoveSimbolos(int quantidade_simbolos) {
 
 Simbolo* TabelaSimbolos::BuscarSimbolo(const std::string& identificador) {
     Simbolo* simb = nullptr;
-    for (auto it = this->tabelaDeSimbolos.rbegin(); it != this->tabelaDeSimbolos.rend();
-         ++it) {
+    for (auto it = this->tabelaDeSimbolos.rbegin();
+         it != this->tabelaDeSimbolos.rend(); ++it) {
         simb = (Simbolo*)*it;
+
+        /*
+            procedure f(x) -> nl 1
+                procedure g(x) -> nl 2
+
+            g(1) -> nl 1
+
+        */
+
+        if (simb->getNivelLexico() > nivel_lexico &&
+            (simb->getCategoria() != Category::FUNCTION &&
+             simb->getCategoria() != Category::PROCEDURE)) {
+            // !func !proc -> vs pf
+            // nl desse simb > nivel lexico atual
+            // ignore
+            std::cout << "SKIPPED : " << simb->getIdentificador() << " "
+                      << simb->getNivelLexico() << " > " << nivel_lexico << " && "
+                      << Simbolo::showCategory(simb->getCategoria()) << '\n';
+            continue;
+        }
+
         if (simb->getIdentificador() == identificador) {
             return simb;
         }
+        // clang-format on
     }
     return nullptr;
 }
@@ -103,9 +127,10 @@ Simbolo* TabelaSimbolos::BuscarSimbolo(const std::string& identificador) {
 Simbolo* TabelaSimbolos::getTopo() { return this->tabelaDeSimbolos.back(); }
 
 void TabelaSimbolos::show() {
+    std::cout << "NIVEL LEXICO : " << nivel_lexico << '\n';
     std::cout << "+ STACK TOP  +\n";
-    for (auto it = this->tabelaDeSimbolos.rbegin(); it != this->tabelaDeSimbolos.rend();
-         ++it) {
+    for (auto it = this->tabelaDeSimbolos.rbegin();
+         it != this->tabelaDeSimbolos.rend(); ++it) {
         std::cout << "| ";
         ((Simbolo*)*it)->show();
     }
