@@ -33,7 +33,13 @@ run: all
 # ./compilador < tests/input/aula12_var.pas
 # ./compilador < tests/input/aula13_func.pas
 # ./compilador < tests/input/test.pas
-	./compilador < tests/input/tests.pas
+# ./compilador < tests/input/tests.pas
+# ./compilador < tests/input/Exemplo8.9_pgma.pas
+# ./compilador < tests/input/Exemplo8.8_pgma.pas
+# ./compilador < tests/input/Exemplo8.7_pgma.pas
+# ./compilador < tests/input/Exemplo8.6_pgma.pas
+# ./compilador < tests/input/Exemplo8.5_pgma.pas
+# ./compilador < tests/input/Exemplo8.12_pgma.pas (erro tem goto e label)
 
 mepa: 
 	./executaMepa -r -i output/output.mepa
