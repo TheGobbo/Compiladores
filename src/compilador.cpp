@@ -175,8 +175,8 @@ void subrotDeclarado() {
 }
 
 void inicioParams() {
-    flags("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA");
     chamada_proc++;
+    flags("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA" << chamada_proc);
     idxs_params.push_back(idx_params);
     idx_params = 0;
 }
@@ -256,7 +256,7 @@ void callProcedure() {
     MEPA.write_code("CHPR " + stack_rotulos.transform(rotulo) + ", " +
                     itoa(nivel_lexico));
 
-    validadeSignature(proc);
+    validateSignature(proc);
 
     // salva subrotina atual em f(f(n))
     chamada_proc--;
@@ -284,6 +284,7 @@ void endFunction() {
     num_params = 0;
 }
 void callFunction() {
+    flags("SOBREVIVI: " << stack_subrots.size());
     std::string identif = stack_subrots.back()->getIdentificador();
     Simbolo* proc = TS.BuscarSimbolo(identif);
 
@@ -292,7 +293,7 @@ void callFunction() {
         return;
     }
 
-    validadeSignature(proc);
+    validateSignature(proc);
 
     char rotulo = proc->getRotulo();
     MEPA.write_code("CHPR " + stack_rotulos.transform(rotulo) + ", " +
@@ -305,9 +306,9 @@ void callFunction() {
     }
 }
 
-void validadeSignature(Simbolo* subrot) {
+void validateSignature(Simbolo* subrot) {
     if (subrot->getCategoria() != Category::PROCEDURE &&
-        subrot->getCategoria() != FUNCTION) {
+        subrot->getCategoria() != Category::FUNCTION) {
         return;
     }
 
@@ -326,6 +327,7 @@ void validadeSignature(Simbolo* subrot) {
     int idx = subrot->getTamParams();
     for (param; param != subrot->getParams().crend(); ++param, --idx) {
         VariableType expect_vartype = (*param).first;
+        flags("MORRI? " << stack_param.size());
         VariableType got_vartype = stack_param.back().second;
 
         PassageType expect_passtype = (*param).second;
@@ -340,9 +342,10 @@ void validadeSignature(Simbolo* subrot) {
                   " but got " + Simbolo::showVariable(got_vartype));
         }
 
-        // var soh aceita VS
+        // var soh aceita VS ( ou PF dentro de subrotina )
         if (expect_passtype == PassageType::BY_REFERENCE &&
-            got_category != Category::VARIAVEL_SIMPLES) {
+            (got_category != Category::VARIAVEL_SIMPLES &&
+             got_category != Category::PARAMETRO_FORMAL)) {
             error("Wrong Passage Type in " + std::to_string(idx) +
                   "° parameter for function <" + subrot->getIdentificador() +
                   "> expected " + Simbolo::showPassage(expect_passtype) +
@@ -392,8 +395,7 @@ void declaraIdentificador() {
         last_simb = simbolo;
     }
 
-    if (simbolo->getCategoria() == Category::PROCEDURE ||
-        simbolo->getCategoria() == Category::FUNCTION) {
+    if (simbolo->getCategoria() == Category::PROCEDURE) {
         stack_subrots.push_back(simbolo);
     }
 }
@@ -481,7 +483,6 @@ void loadConstante(std::string valor) {
         stack_tipos.push_back(VariableType::INTEIRO);
     }
 
-    flags("SOMA EU");
     stack_param.push_back(std::make_pair(Category::CTE, stack_tipos.back()));
 }
 
@@ -502,6 +503,7 @@ void removeForaEscopo() {
 // escolhe operacao de carrecar simbolo na mepa
 void carregaValor(Simbolo* simbolo) {
     if (simbolo->getCategoria() == FUNCTION) {
+        stack_subrots.push_back(simbolo);
         MEPA.write_code("AMEM 1");
         return;
     }
@@ -542,7 +544,7 @@ int getLoadType(Simbolo* simbolo, Simbolo* subrotina) {
 
     int tam_params = subrotina->getTamParams();
     if (tam_params <= idx_params) {
-        error("Wrong number of parameters for function <" +
+        error("!Wrong number of parameters for function <" +
               subrotina->getIdentificador() + "> expected " +
               std::to_string(tam_params) + " but got " +
               std::to_string(idx_params + 1));

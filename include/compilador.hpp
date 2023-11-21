@@ -104,7 +104,7 @@ void callFunction();
 void inicioParams();
 void fimParams();
 
-void validadeSignature(Simbolo* subrot);
+void validateSignature(Simbolo* subrot);
 
 void declaraIdentificador();  // salvarVarSimples();
 

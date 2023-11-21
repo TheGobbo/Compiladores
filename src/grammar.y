@@ -193,9 +193,8 @@ chamada_procedimento    : ABRE_PARENTESES { inicioParams(); } lista_params { fim
 ;
 
 /* 24. lista_expr */
-lista_params    : lista_params VIRGULA {idx_params++;} expr
-                | expr {idx_params++;}
-
+lista_params    : lista_params VIRGULA expr { idx_params++; }
+                | expr { idx_params++; }
 // /* 21. */
 // desvio  : GOTO NUMERO
 // ;

@@ -11,6 +11,6 @@ begin
     m := 1;
     while(m < 50) do
     begin
-        write(f(1,m), LineEnding);
+        write(f(1,m));
     end
 end.
