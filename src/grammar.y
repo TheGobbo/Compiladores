@@ -189,12 +189,12 @@ atribuicao  : ATRIBUICAO { print_tipos(); } expr  {  }
 
 /* 20. */
 chamada_procedimento    : ABRE_PARENTESES { inicioParams(); } lista_params { fimParams(); } FECHA_PARENTESES
-                        | %empty
+                        | %empty { inicioParams(); fimParams(); }
 ;
 
 /* 24. lista_expr */
 lista_params    : lista_params VIRGULA {idx_params++;} expr
-                | expr
+                | expr {idx_params++;}
 
 // /* 21. */
 // desvio  : GOTO NUMERO

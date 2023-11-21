@@ -39,7 +39,6 @@ TabelaSimbolos TS;
 simbolos simbolo;
 
 std::string meu_token;
-std::string proc_tk; /* GAMBI */
 Simbolo* last_simb;
 // ParamFormal last_proc;
 
@@ -176,12 +175,14 @@ void subrotDeclarado() {
 }
 
 void inicioParams() {
+    flags("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA");
     chamada_proc++;
     idxs_params.push_back(idx_params);
     idx_params = 0;
 }
 
 void fimParams() {
+    flags("INDEX IS " << idx_params << " " << penult_idx);
     penult_idx = idx_params;
     idx_params = idxs_params.back();
     idxs_params.pop_back();
@@ -243,10 +244,11 @@ void endProcedure() {
 
 // chama procedure com ultimo IDENT de procedure salvo
 void callProcedure() {
-    Simbolo* proc = TS.BuscarSimbolo(proc_tk); /* GAMBI */
+    std::string identif = stack_subrots.back()->getIdentificador();
+    Simbolo* proc = TS.BuscarSimbolo(identif);
 
     if (proc == nullptr || proc->getCategoria() != Category::PROCEDURE) {
-        std::cerr << "nao achou procedure " << proc_tk << '\n';
+        // std::cerr << "nao achou procedure " << identif << '\n';
         return;
     }
 
@@ -282,11 +284,11 @@ void endFunction() {
     num_params = 0;
 }
 void callFunction() {
-    Simbolo* proc = TS.BuscarSimbolo(proc_tk); /* GAMBI */
+    std::string identif = stack_subrots.back()->getIdentificador();
+    Simbolo* proc = TS.BuscarSimbolo(identif);
 
     if (proc == nullptr || proc->getCategoria() != Category::FUNCTION) {
-        // std::cerr << "nao achou procedure " << proc_tk << '\n';
-        flags("&&&&&& Nao achou funcao <" + meu_token + ">");
+        std::cerr << "nao achou procedure " << identif << '\n';
         return;
     }
 
@@ -310,10 +312,10 @@ void validadeSignature(Simbolo* subrot) {
     }
 
     int expected_size = subrot->getParams().size();
-    int received_size = penult_idx + 1;
+    int received_size = penult_idx;
 
     if (received_size != expected_size) {
-        error("Wrong number of parameters for function <" +
+        error("?Wrong number of parameters for function <" +
               subrot->getIdentificador() + "> expected " +
               std::to_string(expected_size) + " but got " +
               std::to_string(received_size));
@@ -391,8 +393,8 @@ void declaraIdentificador() {
     }
 
     if (simbolo->getCategoria() == Category::PROCEDURE ||
-        simbolo->getCategoria() == FUNCTION) {
-        proc_tk = meu_token; /* GAMBI */
+        simbolo->getCategoria() == Category::FUNCTION) {
+        stack_subrots.push_back(simbolo);
     }
 }
 
@@ -464,10 +466,6 @@ void saveVariavel() {
     if (simbolo->getCategoria() != Category::PROCEDURE) {
         stack_tipos.push_back(simbolo->getTipo());
     }
-    if (simbolo->getCategoria() == Category::PROCEDURE ||
-        simbolo->getCategoria() == Category::FUNCTION) {
-        stack_subrots.push_back(simbolo);
-    }
 
     carregaValor(simbolo);
 }
@@ -483,9 +481,8 @@ void loadConstante(std::string valor) {
         stack_tipos.push_back(VariableType::INTEIRO);
     }
 
-    if (!stack_subrots.empty()) {
-        stack_param.push_back(std::make_pair(Category::CTE, stack_tipos.back()));
-    }
+    flags("SOMA EU");
+    stack_param.push_back(std::make_pair(Category::CTE, stack_tipos.back()));
 }
 
 // remove da tabela de simbolos os simbolos fora do escopo atual em t_compilacao
@@ -544,7 +541,7 @@ int getLoadType(Simbolo* simbolo, Simbolo* subrotina) {
     }
 
     int tam_params = subrotina->getTamParams();
-    if (subrotina->getTamParams() <= idx_params) {
+    if (tam_params <= idx_params) {
         error("Wrong number of parameters for function <" +
               subrotina->getIdentificador() + "> expected " +
               std::to_string(tam_params) + " but got " +

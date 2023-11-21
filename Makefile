@@ -29,10 +29,10 @@ run: all
 # ./compilador < tests/input/aula10_escopo.pas
 # ./compilador < tests/input/aula10_proc.pas
 # ./compilador < tests/input/aula11_pf.pas
-# ./compilador < tests/input/aula11_stress.pas
+	./compilador < tests/input/aula11_stress.pas
 # ./compilador < tests/input/aula12_var.pas
 # ./compilador < tests/input/aula13_func.pas
-	./compilador < tests/input/tests.pas
+# ./compilador < tests/input/tests.pas
 
 mepa: 
 	./executaMepa -r -i output/output.mepa
