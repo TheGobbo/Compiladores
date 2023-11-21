@@ -34,7 +34,8 @@ run: all
 # ./compilador < tests/input/aula13_func.pas
 # ./compilador < tests/input/test.pas
 # ./compilador < tests/input/tests.pas
-	./compilador < tests/input/Exemplo7.5_pgma.pas
+	./compilador < tests/input/Exemplo6_pgma.pas
+# ./compilador < tests/input/Exemplo7.5_pgma.pas
 # ./compilador < tests/input/Exemplo8.9_pgma.pas
 # ./compilador < tests/input/Exemplo8.8_pgma.pas
 # ./compilador < tests/input/Exemplo8.7_pgma.pas
