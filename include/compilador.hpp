@@ -101,6 +101,8 @@ void beginFunction();
 void endFunction();
 void callFunction();
 
+void endForward();
+
 void inicioParams();
 void fimParams();
 

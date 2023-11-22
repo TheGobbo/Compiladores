@@ -40,6 +40,7 @@
 %token DIFERENCA MENOR MENOR_IGUAL MAIOR_IGUAL MAIOR IGUALDADE
 %token INTEGER BOOLEAN TRUE FALSE 
 %token LABEL TYPE ARRAY OF GOTO ASTERISCO NOT 
+%token FORWARD
 
 %precedence LOWER_THEN_ELSE
 %precedence ELSE
@@ -110,17 +111,19 @@ parte_declara_subrot : parte_declara_subrot declara_procedimento PONTO_E_VIRGULA
 ;
 
 /* 12. */
-declara_procedimento : PROCEDURE IDENT 
-                    { beginProcedure(); } 
-                        param_formais PONTO_E_VIRGULA  bloco 
-                    { endProcedure(); }
+declara_procedimento: PROCEDURE IDENT { beginProcedure(); } procedimento_forward 
+;
+
+procedimento_forward:   param_formais PONTO_E_VIRGULA FORWARD { endForward(); }
+                    |   param_formais PONTO_E_VIRGULA  bloco { endProcedure(); }
 ;
 
 /* 13. */
-declara_funcao      : FUNCTION IDENT 
-                    { beginFunction(); }
-                        param_formais DOIS_PONTOS tipo  PONTO_E_VIRGULA bloco
-                    { endFunction(); }
+declara_funcao      : FUNCTION IDENT { beginFunction(); } funcao_forward
+;
+
+funcao_forward      :   param_formais DOIS_PONTOS tipo PONTO_E_VIRGULA FORWARD  { endForward(); }
+                    |   param_formais DOIS_PONTOS tipo  PONTO_E_VIRGULA bloco   { endFunction(); }
 ;
 
 /* 14. */

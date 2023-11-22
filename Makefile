@@ -34,7 +34,7 @@ run: all
 # ./compilador < tests/input/aula13_func.pas
 # ./compilador < tests/input/test.pas
 # ./compilador < tests/input/tests.pas
-	./compilador < tests/input/Exemplo6_pgma.pas
+# ./compilador < tests/input/Exemplo6_pgma.pas
 # ./compilador < tests/input/Exemplo7.5_pgma.pas
 # ./compilador < tests/input/Exemplo8.9_pgma.pas
 # ./compilador < tests/input/Exemplo8.8_pgma.pas
@@ -42,9 +42,10 @@ run: all
 # ./compilador < tests/input/Exemplo8.6_pgma.pas
 # ./compilador < tests/input/Exemplo8.5_pgma.pas
 # ./compilador < tests/input/Exemplo8.12_pgma.pas (erro tem goto e label)
+	./compilador < tests/input/forward1.pas
 
 mepa: 
-	./executaMepa -r -i output/output.mepa
+	./executaMepa -r -i MEPA
 
 # Run tests
 test: all

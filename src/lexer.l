@@ -7,9 +7,9 @@
 
 using namespace bison;
 
-// #define PADD std::left << std::setw(16) << std::setfill(' ')
-// #define IMPRIME(STR) if(print) { std::cerr << PADD << STR << "\t# " << PADD << meu_token << num_line << '\n' ;}
-#define IMPRIME(STR) {};
+#define PADD std::left << std::setw(16) << std::setfill(' ')
+#define IMPRIME(STR) if(print) { std::cerr << PADD << STR << "\t# " << PADD << meu_token << num_line << '\n' ;}
+// #define IMPRIME(STR) {};
 
 %}
 
@@ -19,7 +19,7 @@ pulo_linha [\n]
 
 descarte [\t ]+
 
-ident [a-zA-Z][a-zA-Z0-9]*
+ident [a-zA-Z_][a-zA-Z0-9_]*
 
 numero [0-9]+
 
@@ -87,6 +87,11 @@ procedure { meu_token = yytext;
 function {  meu_token = yytext;
             IMPRIME("function ");
             return Parser::token::FUNCTION;
+}
+
+forward {   meu_token = yytext;
+            IMPRIME("forward");
+            return Parser::token::FORWARD;
 }
 
 goto    {   meu_token = yytext;

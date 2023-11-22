@@ -96,23 +96,12 @@ Simbolo* TabelaSimbolos::BuscarSimbolo(const std::string& identificador) {
          it != this->tabelaDeSimbolos.rend(); ++it) {
         simb = (Simbolo*)*it;
 
-        /*
-            procedure f(x) -> nl 1
-                procedure g(x) -> nl 2
-
-            g(1) -> nl 1
-
-        */
-
         if (simb->getNivelLexico() > nivel_lexico &&
             (simb->getCategoria() != Category::FUNCTION &&
              simb->getCategoria() != Category::PROCEDURE)) {
             // !func !proc -> vs pf
             // nl desse simb > nivel lexico atual
             // ignore
-            // std::cout << "SKIPPED : " << simb->getIdentificador() << " "
-            //           << simb->getNivelLexico() << " > " << nivel_lexico << " && "
-            //           << Simbolo::showCategory(simb->getCategoria()) << '\n';
             continue;
         }
 

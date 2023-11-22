@@ -56,6 +56,9 @@ std::deque<int> idxs_params;
 std::deque<Simbolo*> stack_subrots;
 std::deque<std::pair<Category, VariableType>> stack_param;
 
+std::map<Simbolo*, bool> forwards;
+Simbolo* subrot_atual = nullptr;
+
 bool print = false;
 
 /* -------------------------------------------------------------------
@@ -156,10 +159,16 @@ void endCompilador() {
 }
 
 /* BLOCO */
-
 // Escreve alocacao de memoria na mepa e salva na stack_mem
 // ???? DSVS nn lembro pq isso ta aqui, procedures acho?
 void varsDeclarado() {
+    // subrot q entrei E que ja existe
+    if (subrot_atual != nullptr &&
+        TS.BuscarSimbolo(subrot_atual->getIdentificador()) != nullptr) {
+        MEPA.write_rotulo(subrot_atual->getRotulo(),
+                          "ENPR " + itoa(subrot_atual->getNivelLexico()));
+    }
+
     MEPA.Alloc(num_amem);
     stack_mem.push_back(num_amem);
 
@@ -229,20 +238,36 @@ void novoSimbolo() {
 void beginProcedure() {
     nivel_lexico++;
 
+    Simbolo* curr = TS.BuscarSimbolo(meu_token);
+
+    // ja existe e é forward, ignora
+    if (curr != nullptr && forwards[curr] == true) {
+        subrot_atual = curr;
+        return;
+    }
+
     Simbolo* proc{new Simbolo{meu_token, PROCEDURE, nivel_lexico}};
     proc->setNumParams(0);
     proc->setRotulo(stack_rotulos.push().top());
     TS.InsereSimbolo(proc);
+    // TS.show();
 
-    MEPA.write_rotulo(stack_rotulos.top(), "ENPR " + itoa(nivel_lexico));
+    subrot_atual = proc;
+    forwards[proc] = false;
+
+    // MEPA.write_rotulo(stack_rotulos.top(), "ENPR " + itoa(nivel_lexico));
     stack_rotulos.pop();
+    TS.show();
 }
 
 void endProcedure() {
     MEPA.write_code("RTPR " + itoa(nivel_lexico, num_params));
     nivel_lexico--;
     num_params = 0;
+    forwards[subrot_atual] = false;
 }
+
+void endProcedureForward() { forwards[subrot_atual] = true; }
 
 // chama procedure com ultimo IDENT de procedure salvo
 void callProcedure() {
@@ -271,13 +296,22 @@ void callProcedure() {
 void beginFunction() {
     nivel_lexico++;
 
-    // TS.show();
+    Simbolo* curr = TS.BuscarSimbolo(meu_token);
+    // ja existe e é forward, ignora
+    if (curr != nullptr && forwards[curr] == true) {
+        subrot_atual = curr;
+        return;
+    }
+
     Simbolo* func{new Simbolo{meu_token, FUNCTION, nivel_lexico}};
     func->setNumParams(0);
     func->setRotulo(stack_rotulos.push().top());
     TS.InsereSimbolo(func);
+    // TS.show();
 
-    MEPA.write_rotulo(stack_rotulos.top(), "ENPR " + itoa(nivel_lexico));
+    subrot_atual = func;
+    forwards[func] = false;
+
     stack_rotulos.pop();
 }
 
@@ -285,7 +319,14 @@ void endFunction() {
     MEPA.write_code("RTPR " + itoa(nivel_lexico, num_params));
     nivel_lexico--;
     num_params = 0;
+    forwards[subrot_atual] = false;
 }
+
+void endForward() {
+    nivel_lexico--;
+    forwards[subrot_atual] = true;
+}
+
 void callFunction() {
     flags("SOBREVIVI: " << stack_subrots.size());
     std::string identif = stack_subrots.back()->getIdentificador();
@@ -371,14 +412,13 @@ void paramFormal() {
         var->setPassagem(PassageType::BY_VALUE);
     }
 
-    TS.InsereSimbolo(var);
+    if (subrot_atual != nullptr && forwards[subrot_atual] == false) {
+        TS.InsereSimbolo(var);
+    }
 }
 
 // configura infos dos params formais
-void fimParamFormal() {
-    num_params = TS.setParamFormal();
-    // TS.show();
-}
+void fimParamFormal() { num_params = TS.setParamFormal(); }
 
 /* ATRIBUICAO */
 // carrega valor atribuido ao simbolo na mepa, valida tipos envolvidos
